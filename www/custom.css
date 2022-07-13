@@ -1,0 +1,18 @@
+#plot_div {
+  width: 90%;
+  background-color: #D0ECC0;
+  margin: auto;
+  padding: 20px;
+  border-radius: 10px
+}
+
+#info_msg{
+  color: #DF572A;
+  text-align: center;
+  padding: 20px;
+  font-size: 28px;
+}
+
+.btn {
+  border-radius: 10px !important;
+}

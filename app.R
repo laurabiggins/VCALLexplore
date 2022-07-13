@@ -15,36 +15,45 @@ table_data <- joined
 table_data$pos <- as.integer(table_data$pos)
 
 ui <- fluidPage(
-
-    # Application title
-    titlePanel(""),
-
-    br(),
-    DT::dataTableOutput("main_table"),
-    br(),
-    #selectInput("vcall", label = "select V call", choices = vcalls),
+  shinyjs::useShinyjs(),
+  tags$head(
+    tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
+  ),
+  titlePanel("", windowTitle = "V CALLS"),
+  br(),
+  div(id = "table_div", DT::dataTableOutput("main_table")),
+  br(),
+  p(id = "info_msg", "Select a row from the table to display plot for that CDR3"),
+  div(
+    id = "plot_div",
     plotly::plotlyOutput("AAplot"),
     radioButtons(
-      "yaxis", 
+      "yaxis_data", 
       label = NULL, 
       inline = TRUE,
       choices=c("difference in proportions" = "percent_diff", "fold change" ="fold_change")
-    ),
-    # sliderInput(
-    #   "min_diff", 
-    #   label="show percentage difference", 
-    #   min = 0, 
-    #   max=max(abs(joined$percent_diff)), 
-    #   value=c(2,100)
-    # ),
-    actionButton("browser", "browser")
-
+    )
+  ),
+  actionButton("browser", "browser")
 )
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
 
   observeEvent(input$browser, browser())
+  
+  shinyjs::hideElement("plot_div")
+  
+  observeEvent(selected_vcall(), {
+    if(isTruthy(selected_vcall())) {
+      shinyjs::showElement("plot_div")
+      shinyjs::hideElement("info_msg")
+    }
+    else {
+      shinyjs::showElement("info_msg")
+      shinyjs::hideElement("plot_div")
+    }
+  })
   
   selected_vcall <- reactive({
     
@@ -75,11 +84,11 @@ server <- function(input, output) {
       dplyr::select(aa_count1, aa_count2) %>%
       tidyr::unite(col = both_counts, sep = ":") %>%
       dplyr::pull(both_counts)
-    
+
     filtered_joined %>%
       plotly::plot_ly(
         x= ~pos, 
-        y= ~.data[[input$yaxis]], 
+        y= ~.data[[input$yaxis_data]], 
         color= ~value, 
         customdata=count_values
       ) %>%
@@ -88,7 +97,10 @@ server <- function(input, output) {
         hovertemplate = '<b>counts DS1:DS2</b>: %{customdata}',
         size = I(20)
       ) %>%
-      plotly::layout(title = selected_vcall())
+      plotly::layout(
+        title = list(text = selected_vcall(), pad = list(t=200, b=200)), # pad doesn't seem to be doing anything
+        yaxis = list(title = input$yaxis_data)
+      )
     
     
 
