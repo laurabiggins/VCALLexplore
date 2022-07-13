@@ -18,31 +18,28 @@ aa_lengths2 <- ds2 %>%
   mutate(n_aa = nchar(AA)) %>%
   count(n_aa)
 
-# aa_counts <- summary %>%
-#   group_by(V_CALL, pos) %>%
-#   count(value) %>%
-#   ungroup() 
-
-#ds1 %>%
-#  mutate(aa_length = nchar(AA))
+# tibble that contains a column called CDR3_IGBLAST_AA (or similar) that contains all the aa sequences
+summary_aa_lengths <- function(dataset, dataset_name, cdr3_col = "CDR3_IGBLAST_AA"){
+  dataset %>%
+    select({cdr3_col}) %>%
+    rename(AA = {cdr3_col}) %>%
+    mutate(n_aa = nchar(AA)) %>%
+    count(n_aa, name = dataset_name)
+}
 
 summary1 <- ds1 %>%
   select(V_CALL, CDR3_IGBLAST_AA) %>%
-  #select(CDR3_IGBLAST_AA) %>%
   rename(AA = CDR3_IGBLAST_AA) %>%
   mutate(n_aa = nchar(AA)) %>%
   relocate(n_aa, .before=AA) %>%
-  #filter(nchar(AA) >= 9) %>%
-  filter(nchar(AA) <= 22 & nchar(AA) >=9) %>%
+  filter(nchar(AA) <= 22 & nchar(AA) >=9) %>% # we need a maximum or it gets very messy 
   separate(AA, sep = 1:21, into = as.character(1:22), fill = "right", remove = FALSE) %>%
   pivot_longer(-(V_CALL:AA), names_to = "pos") %>%
   filter(value != "") %>%
-  #mutate(pos = as.integer(pos)) 
   mutate(pos = forcats::as_factor(pos)) 
 
 summary2 <- ds2 %>%
   select(V_CALL, CDR3_IGBLAST_AA) %>%
-  #select(CDR3_IGBLAST_AA) %>%
   rename(AA = CDR3_IGBLAST_AA) %>%
   mutate(n_aa = nchar(AA)) %>%
   relocate(n_aa, .before=AA) %>%
@@ -50,7 +47,6 @@ summary2 <- ds2 %>%
   separate(AA, sep = 1:21, into = as.character(1:22), fill = "right", remove = FALSE) %>%
   pivot_longer(-(V_CALL:AA), names_to = "pos") %>%
   filter(value != "") %>%
-  #mutate(pos = as.integer(pos)) 
   mutate(pos = forcats::as_factor(pos)) 
 
 
@@ -70,7 +66,7 @@ pos_counts2 <- summary2 %>%
   #select(-AA, -total, -n_aa) %>%
   distinct()
 
-# We've got some NAs where the aa isn't present at that positions in one of the datasets
+# We've got some NAs where the aa isn't present at that position in one of the datasets
 # pos_counts2 %>%
 #   filter(V_CALL=="IGHV1-62-3") %>%
 #   filter(pos==9)
@@ -95,7 +91,12 @@ joined <- joined %>%
   mutate(fold_change = replace(fold_change, fold_change < -100, -100)) %>%
   mutate(raw_diff = aa_count1-aa_count2)
   
+#mydb <- dbConnect(RSQLite::SQLite(), "vcall_db")
 
+# we can have a table of the summary of amino acid lengths, where each column is one of the datasets,
+# then separate tables for summaries of each dataset
+
+# then we'll need the joined ones - how efficient is the sql join compared to this dplyr version - I'm guessing similar...
 
 saveRDS(aa_lengths1, "data/aa_lengths1.rds")
 saveRDS(aa_lengths2, "data/aa_lengths2.rds")
