@@ -19,9 +19,11 @@ my_ds$get_aa_counts("IGHV1-12")
 
 my_ds$J_calls
 my_ds$D_calls
+my_ds$V_calls
 my_ds$aa_lengths
 my_ds$np_lengths
 my_ds$aa_counts
+
 
 
 

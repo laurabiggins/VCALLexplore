@@ -10,6 +10,13 @@ process_D_calls <- function(dataset){
     dplyr::count(V_CALL, singleD)
 }
 
+process_V_calls <- function(dataset){
+  dataset |>
+    dplyr::select(V_CALL) |>
+    dplyr::distinct() |>
+    dplyr::pull(V_CALL)
+}
+
 process_np_lengths <- function(dataset){
   dplyr::select(dataset, V_CALL, NP1_LENGTH, NP2_LENGTH)
 }
@@ -19,8 +26,8 @@ process_aa_lengths <- function(dataset, cdr3_col = "CDR3_IGBLAST_AA"){
   dataset |>
     dplyr::select({cdr3_col}) |>
     dplyr::rename(AA = {cdr3_col}) |>
-    dplyr::mutate(n_aa = nchar(AA)) |>
-    dplyr::count(n_aa)
+    dplyr::mutate(n_aa = nchar(AA)) #|>
+    #dplyr::count(n_aa)
 }
 
 process_individual_aa <- function(dataset, cdr3_col = "CDR3_IGBLAST_AA") {
@@ -46,8 +53,9 @@ parsing_wrapper <- function(dataset, dataset_name){
   
   J <- process_J_calls(dataset)
   D <- process_D_calls(dataset)
+  V <- process_V_calls(dataset)
   np <- process_np_lengths(dataset)
   aa <- process_aa_lengths(dataset)
   aa_count <- process_individual_aa(dataset)
-  VCall$new(dataset_name, J_calls=J, D_calls=D, np_lengths = np, aa_lengths = aa, aa_counts = aa_count)
+  VCall$new(dataset_name, J_calls=J, D_calls=D, V_calls=V, np_lengths = np, aa_lengths = aa, aa_counts = aa_count)
 }
