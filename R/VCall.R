@@ -1,0 +1,55 @@
+library(R6)
+
+VCall <- R6Class("VCall", list(
+  
+  name = NULL,
+  J_calls = NA,
+  D_calls = NA,
+  np_lengths = NA,
+  aa_lengths = NA,
+  aa_counts = NA,
+  
+  initialize = function(
+    name, 
+    J_calls=NA, 
+    D_calls=NA, 
+    np_lengths = NA, 
+    aa_lengths = NA,
+    aa_counts = NA
+  ) {
+    
+    stopifnot(is.character(name), length(name) == 1)
+    
+    self$name <- name
+    self$J_calls <- J_calls
+    self$D_calls <- D_calls
+    self$np_lengths <- np_lengths
+    self$aa_lengths <- aa_lengths
+    self$aa_counts <- aa_counts
+  },
+  
+  get_Jcalls = function(v_call) {
+    if(v_call %in% self$J_calls$V_CALL) {
+      dplyr::filter(self$J_calls, V_CALL==v_call)
+    }
+  },
+  
+  get_Dcalls = function(v_call) {
+    if(v_call %in% self$D_calls$V_CALL) {
+      dplyr::filter(self$D_calls, V_CALL==v_call)
+    }
+  },
+  
+  get_np_lengths= function(v_call) {
+    if(v_call %in% self$np_lengths$V_CALL) {
+      dplyr::filter(self$np_lengths, V_CALL==v_call)
+    }
+  },
+  
+  get_aa_counts = function(v_call) {
+    if(v_call %in% self$aa_counts$V_CALL) {
+      dplyr::filter(self$aa_counts, V_CALL==v_call)
+    }
+  }
+  
+))
