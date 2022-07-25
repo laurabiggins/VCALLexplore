@@ -80,25 +80,14 @@ ui <- fluidPage(
         id = "aa_lengths", 
         title = "amino acid lengths", 
         width = 3, 
+        collapsible = TRUE,
         plotOutput("aa_length_plot")
       ),
-      box(
-        id = "J calls", 
-        title = "J call counts", 
-        width = 3, 
-        plotOutput("Jcall_plot")
-        
-      ),
-      box(
-        id = "D calls", 
-        title = "D call counts", 
-        width = 6, 
-        plotOutput("Dcall_plot")
-      ),
-     # mod_barplotUI(id="myJbarplot"),
+      uiOutput("np1_lengths_plot"),
+      uiOutput("np2_lengths_plot"),
       uiOutput("Jcall_barplot"),
-      
-      
+      uiOutput("Dcall_barplot"),
+
       # div(id = "table_div", DT::dataTableOutput("main_table")),
       # br(),
       # p(id = "info_msg", "Select a row from the table to display plot for that CDR3"),
@@ -125,6 +114,7 @@ server <- function(input, output) {
   shinyjs::hideElement("plot_div")
   shinyjs::disable("vcall_selector")
   shinyjs::hide("Jcall_barplot")
+  shinyjs::hide("Dcall_barplot")
   
   ds1 <- reactiveVal()
   ds2 <- reactiveVal()
@@ -134,8 +124,10 @@ server <- function(input, output) {
   observeEvent(selectedV(), {
     if(isTruthy(selectedV())){
       shinyjs::show("Jcall_barplot")
+      shinyjs::show("Dcall_barplot")
     } else {
       shinyjs::hide("Jcall_barplot")
+      shinyjs::hide("Dcall_barplot")
     }
   })
   
@@ -154,13 +146,13 @@ server <- function(input, output) {
     
     req(Jcalls1(), Jcalls2())
     
-    Jcalls1() |>
-      dplyr::rename(!!ds1()$name := n) |>
-      dplyr::full_join(Jcalls2()) |>
-      dplyr::select(-V_CALL) |>
-      dplyr::rename(!!ds2()$name := n) |>
-      tidyr::pivot_longer(-J_CALL, names_to="dataset", values_to="count")
+    J2 <- Jcalls2() |>
+      tibble::add_column(dataset = ds2()$name)
     
+    Jcalls1() |>
+      tibble::add_column(dataset = ds1()$name) |>
+      dplyr::bind_rows(J2)
+
   })
   
   ## Dcalls ----  
@@ -178,16 +170,13 @@ server <- function(input, output) {
     
     req(Dcalls1(), Dcalls2())
     
-    Dcalls1() |>
-      dplyr::rename(!!ds1()$name := n) |>
-      dplyr::full_join(Dcalls2()) |>
-      dplyr::select(-V_CALL) |>
-      dplyr::rename(!!ds2()$name := n) |>
-      tidyr::pivot_longer(-singleD, names_to="dataset", values_to="count")
+    D2 <- Dcalls2() |>
+      tibble::add_column(dataset = ds2()$name)
     
+    Dcalls1() |>
+      tibble::add_column(dataset = ds1()$name) |>
+      dplyr::bind_rows(D2)
   })
-  
-  
   
   observeEvent(input$load_datasets, {
     
@@ -231,57 +220,40 @@ server <- function(input, output) {
       geom_density(adjust = 3, alpha =0.5, colour = "black")
   })
   
+  
+  ## np lengths -----
+  output$np1_lengths_plot <- renderUI({
+    
+    box_wrapper(box_id="np1plotbox", box_title="np 1 lengths", plotOutput("np1_lengths"))
+    
+  })
+  
+  output$np2_lengths_plot <- renderUI({
+    
+    box_wrapper(box_id="np2plotbox", box_title="np 2 lengths", plotOutput("np2_lengths"))
+    
+  })
+  
+  output$np1_lengths <- renderPlot(plot(1:10))
+  output$np2_lengths <- renderPlot(plot(1:10))
+  
   output$Jcall_barplot <- renderUI({
 
     JbarplotUI <- mod_barplotUI(id="Jbarplot")
     box_wrapper(box_id="Jbarplotbox", box_title="J call counts", JbarplotUI)
   })
   
+  output$Dcall_barplot <- renderUI({
+    
+    DbarplotUI <- mod_barplotUI(id="Dbarplot")
+    box_wrapper(box_id="Dbarplotbox", box_title="D call counts", DbarplotUI)
+  })
+  
+  mod_barplotServer("Dbarplot", ds=Dcalls, feature="singleD")
   mod_barplotServer("Jbarplot", ds=Jcalls, feature="J_CALL")
   
-  output$Jcall_plot <- renderPlot({
-    
-    req(Jcalls())
-    
-    ggplot(Jcalls(), aes(x = J_CALL, y = count, fill = dataset)) +
-      geom_col(colour = "black", position = position_dodge2())
-    
-    #ggplot(Jcalls(), aes(x = dataset, y = count, fill = J_CALL)) +
-    #  geom_col(colour = "black", position = position_dodge2())
-    
-  })
-  
-  output$Dcall_plot <- renderPlot({
-    
-    req(Dcalls())
-    
-    ggplot(Dcalls(), aes(x = singleD, y = count, fill = dataset)) +
-      geom_col(colour = "black", position = position_dodge2())
-    
-    #ggplot(Dcalls(), aes(x = dataset, y = count, fill = singleD)) +
-    #  geom_col(colour = "black", position = position_dodge2())
-    
-  })
-  
-  
 }  
-  # observeEvent(selected_vcall(), {
-  #   if(isTruthy(selected_vcall())) {
-  #     shinyjs::showElement("plot_div")
-  #     shinyjs::hideElement("info_msg")
-  #   }
-  #   else {
-  #     shinyjs::showElement("info_msg")
-  #     shinyjs::hideElement("plot_div")
-  #   }
-  # })
-  
-  # selected_vcall <- reactive({
-  #   
-  #   row_number <- input$main_table_rows_selected
-  #   joined$V_CALL[row_number]
-  # })
-  
+
   # output$main_table <- DT::renderDataTable({
   # 
   #   DT::datatable(
