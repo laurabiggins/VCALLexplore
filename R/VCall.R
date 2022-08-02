@@ -8,7 +8,7 @@ VCall <- R6Class("VCall", list(
   V_calls = NA,
   np_lengths = NA,
   aa_lengths = NA,
-  aa_counts = NA,
+  aa_counts_left = NA,
   
   initialize = function(
     name, 
@@ -17,7 +17,7 @@ VCall <- R6Class("VCall", list(
     V_calls = NA,
     np_lengths = NA, 
     aa_lengths = NA,
-    aa_counts = NA
+    aa_counts_left = NA
   ) {
     
     stopifnot(is.character(name), length(name) == 1)
@@ -28,7 +28,7 @@ VCall <- R6Class("VCall", list(
     self$V_calls = V_calls
     self$np_lengths <- np_lengths
     self$aa_lengths <- aa_lengths
-    self$aa_counts <- aa_counts
+    self$aa_counts_left <- aa_counts_left
   },
   
   get_Jcalls = function(v_call) {
@@ -49,9 +49,9 @@ VCall <- R6Class("VCall", list(
     }
   },
   
-  get_aa_counts = function(v_call) {
-    if(v_call %in% self$aa_counts$V_CALL) {
-      dplyr::filter(self$aa_counts, V_CALL==v_call)
+  get_aa_counts_left = function(v_call) {
+    if(v_call %in% self$aa_counts_left$V_CALL) {
+      dplyr::filter(self$aa_counts_left, V_CALL==v_call)
     }
   }
   

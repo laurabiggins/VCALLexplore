@@ -36,7 +36,7 @@ process_aa_lengths <- function(dataset, cdr3_col = "CDR3_IGBLAST_AA"){
     #dplyr::count(n_aa)
 }
 
-process_individual_aa <- function(dataset, cdr3_col = "CDR3_IGBLAST_AA") {
+process_individual_aa_left <- function(dataset, cdr3_col = "CDR3_IGBLAST_AA") {
   dataset |>
     dplyr::select(V_CALL, {cdr3_col}) |>
     dplyr::rename(AA = {cdr3_col}) |>
@@ -49,8 +49,10 @@ process_individual_aa <- function(dataset, cdr3_col = "CDR3_IGBLAST_AA") {
     dplyr::mutate(pos = forcats::as_factor(pos)) |>
     dplyr::add_count(V_CALL, pos, value, name = "aa_count") |>
     dplyr::add_count(V_CALL, pos, name = "pos_total") |>
+    dplyr::add_count(pos, name="ds_pos_total") |>
     dplyr::mutate(aa_percent = (aa_count/pos_total)*100) |>
-    dplyr::select(-AA, -n_aa) |>
+    dplyr::mutate(aa_ds_percent = (aa_count/ds_pos_total)*100) |>
+    dplyr::select(-AA, -n_aa, -pos_total, -ds_pos_total) |>
     dplyr::distinct()
 }
 
@@ -62,6 +64,6 @@ parsing_wrapper <- function(dataset, dataset_name){
   V <- process_V_calls(dataset)
   np <- process_np_lengths(dataset)
   aa <- process_aa_lengths(dataset)
-  aa_count <- process_individual_aa(dataset)
-  VCall$new(dataset_name, J_calls=J, D_calls=D, V_calls=V, np_lengths = np, aa_lengths = aa, aa_counts = aa_count)
+  aa_count_left <- process_individual_aa_left(dataset)
+  VCall$new(dataset_name, J_calls=J, D_calls=D, V_calls=V, np_lengths = np, aa_lengths = aa, aa_counts_left = aa_count_left)
 }

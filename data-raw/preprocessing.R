@@ -13,7 +13,6 @@ ds1 <- readr::read_tsv("data-raw/ydall.txt")
 my_ds1 <- parsing_wrapper(ds1, "ydall")
 saveRDS(my_ds1, file = "data/ydall.rds")
 
-
 my_ds$get_Jcalls("IGHV1-12")
 my_ds$get_aa_counts("IGHV1-12")
 
@@ -22,11 +21,50 @@ my_ds$D_calls
 my_ds$V_calls
 my_ds$aa_lengths
 my_ds$np_lengths
-my_ds$aa_counts
+
+my_ds$name
+my_ds$aa_counts_left
+my_ds1$name
+my_ds1$aa_counts_left
+
+joined <- full_join(my_ds$aa_counts_left, my_ds1$aa_counts_left, by = c("V_CALL", "pos", "value")) |>
+  dplyr::mutate(percent_diff_vcall = aa_ds_percent.x-aa_ds_percent.y) |>
+  dplyr::mutate(percent_diff_ds = aa_ds_percent.x-aa_ds_percent.y) |>
+  dplyr::mutate(fold_change_vcall = dplyr::if_else(aa_percent.x>=aa_percent.y, aa_percent.x/aa_percent.y, -(aa_percent.y/aa_percent.x))) |>
+  dplyr::mutate(fold_change_vcall = dplyr::if_else(is.infinite(fold_change_vcall), percent_diff_vcall, fold_change_vcall)) |>
+  dplyr::mutate(fold_change_vcall = replace(fold_change_vcall, fold_change_vcall > 100, 100)) |>
+  dplyr::mutate(fold_change_vcall = replace(fold_change_vcall, fold_change_vcall < -100, -100)) |>
+  dplyr::mutate(fold_change_ds = dplyr::if_else(aa_ds_percent.x>=aa_ds_percent.y, aa_ds_percent.x/aa_ds_percent.y, -(aa_ds_percent.y/aa_ds_percent.x))) |>
+  dplyr::mutate(fold_change_ds = dplyr::if_else(is.infinite(fold_change_ds), percent_diff_ds, fold_change_ds)) |>
+  dplyr::mutate(fold_change_ds = replace(fold_change_ds, fold_change_ds > 100, 100)) |>
+  dplyr::mutate(fold_change_ds = replace(fold_change_ds, fold_change_ds < -100, -100))
+  #mutate(raw_diff = aa_count1-aa_count2)
+
+joined <- full_join(my_ds$get_aa_counts_left("IGHV10-1"), my_ds1$get_aa_counts_left("IGHV10-1"), by = c("V_CALL", "pos", "value")) |>
+  dplyr::mutate(percent_diff_vcall = aa_ds_percent.x-aa_ds_percent.y) |>
+  dplyr::mutate(percent_diff_ds = aa_ds_percent.x-aa_ds_percent.y) |>
+  dplyr::mutate(fold_change_vcall = dplyr::if_else(aa_percent.x>=aa_percent.y, aa_percent.x/aa_percent.y, -(aa_percent.y/aa_percent.x))) |>
+  dplyr::mutate(fold_change_vcall = dplyr::if_else(is.infinite(fold_change_vcall), percent_diff_vcall, fold_change_vcall)) |>
+  dplyr::mutate(fold_change_vcall = replace(fold_change_vcall, fold_change_vcall > 100, 100)) |>
+  dplyr::mutate(fold_change_vcall = replace(fold_change_vcall, fold_change_vcall < -100, -100)) |>
+  dplyr::mutate(fold_change_ds = dplyr::if_else(aa_ds_percent.x>=aa_ds_percent.y, aa_ds_percent.x/aa_ds_percent.y, -(aa_ds_percent.y/aa_ds_percent.x))) |>
+  dplyr::mutate(fold_change_ds = dplyr::if_else(is.infinite(fold_change_ds), percent_diff_ds, fold_change_ds)) |>
+  dplyr::mutate(fold_change_ds = replace(fold_change_ds, fold_change_ds > 100, 100)) |>
+  dplyr::mutate(fold_change_ds = replace(fold_change_ds, fold_change_ds < -100, -100))
 
 
 
-
+library(plotly)
+join1 %>%
+  dplyr::filter(V_CALL == "IGHV10-1") %>%
+  #dplyr::filter(abs(percent_diff) > 2) %>%
+  plotly::plot_ly(x= ~pos, y= ~percent_diff_vcall, color= ~value) %>%
+  plotly::add_text(
+    text = ~value,
+    #hovertext = ~name,
+    #hoverinfo = "text",
+    size = I(20)
+  )
 
 
 library(ggplot2)
@@ -117,7 +155,75 @@ joined %>%
   filter(pos ==1)
 
 
-# aa_counts1 <- summary1 %>%
-#   group_by(V_CALL, pos) %>%
-#   count(value) %>%
-#   ungroup() 
+# old version but need to check what we need for creating the joined file
+# 
+ds1 <- readr::read_tsv("data-raw/ydall.txt")
+ds2 <- readr::read_tsv("data-raw/umtboth.txt") 
+
+process_left_positions <- function(dataset, cdr3_col = "CDR3_IGBLAST_AA"){
+  dataset |>
+    dplyr::select(V_CALL, {cdr3_col})
+}
+
+ 
+
+summary1 <- ds1 %>%
+  select(V_CALL, CDR3_IGBLAST_AA) %>%
+  #select(CDR3_IGBLAST_AA) %>%
+  rename(AA = CDR3_IGBLAST_AA) %>%
+  mutate(n_aa = nchar(AA)) %>%
+  relocate(n_aa, .before=AA) %>%
+  #filter(nchar(AA) >= 9) %>%
+  filter(nchar(AA) <= 22 & nchar(AA) >=9) %>%
+  separate(AA, sep = 1:21, into = as.character(1:22), fill = "right", remove = FALSE) %>%
+  pivot_longer(-(V_CALL:AA), names_to = "pos") %>%
+  filter(value != "") %>%
+  #mutate(pos = as.integer(pos)) 
+  mutate(pos = forcats::as_factor(pos)) 
+
+summary2 <- ds2 %>%
+  select(V_CALL, CDR3_IGBLAST_AA) %>%
+  #select(CDR3_IGBLAST_AA) %>%
+  rename(AA = CDR3_IGBLAST_AA) %>%
+  mutate(n_aa = nchar(AA)) %>%
+  relocate(n_aa, .before=AA) %>%
+  filter(nchar(AA) <= 22 & nchar(AA) >=9) %>%
+  separate(AA, sep = 1:21, into = as.character(1:22), fill = "right", remove = FALSE) %>%
+  pivot_longer(-(V_CALL:AA), names_to = "pos") %>%
+  filter(value != "") %>%
+  #mutate(pos = as.integer(pos)) 
+  mutate(pos = forcats::as_factor(pos)) 
+
+pos_counts1 <- summary1 %>%
+  add_count(V_CALL, pos, value, name = "aa_count1") %>%
+  add_count(V_CALL, pos, name = "pos_total1") %>%
+  add_count(pos, name="ds_pos_total") %>%
+  mutate(aa_percent1 = (aa_count1/pos_total1)*100) %>%
+  mutate(ds_aa_percent = (aa_count1/pos_total1)*100) %>%
+  select(-AA, -n_aa) %>%
+  #select(-AA, -total, -n_aa) %>%
+  distinct() # if we don't do this we get loads of repetition due to the n_aa lengths
+
+pos_counts2 <- summary2 %>%
+  add_count(V_CALL, pos, value, name = "aa_count2") %>%
+  add_count(V_CALL, pos, name = "pos_total2") %>%
+  mutate(aa_percent2 = (aa_count2/pos_total2)*100) %>%
+  select(-AA, -n_aa) %>%
+  #select(-AA, -total, -n_aa) %>%
+  distinct()
+
+joined <- pos_counts1 %>%
+  full_join(pos_counts2, by = c("V_CALL", "pos", "value")) %>%
+  #replace(is.na(.), 0)
+  mutate(aa_count1 = replace_na(aa_count1, 0)) %>%
+  mutate(aa_percent1 = replace_na(aa_percent1, 0)) %>%
+  mutate(aa_count2 = replace_na(aa_count2, 0)) %>%
+  mutate(aa_percent2 = replace_na(aa_percent2, 0)) %>%
+  mutate(percent_diff = aa_percent1-aa_percent2) 
+
+joined <- joined %>%
+  mutate(fold_change = dplyr::if_else(aa_percent1>=aa_percent2, aa_percent1/aa_percent2, -(aa_percent2/aa_percent1))) %>%
+  mutate(fold_change = dplyr::if_else(is.infinite(fold_change), percent_diff, fold_change)) %>%
+  mutate(fold_change = replace(fold_change, fold_change > 100, 100)) %>%
+  mutate(fold_change = replace(fold_change, fold_change < -100, -100)) %>%
+  mutate(raw_diff = aa_count1-aa_count2)

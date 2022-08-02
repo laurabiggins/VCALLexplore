@@ -6,15 +6,20 @@ library(plotly)
 library(DT)
 library(ggplot2)
 
-joined <- readRDS("data/joined.rds")
-vcalls <- joined %>%
-  dplyr::distinct(V_CALL) %>%
-  dplyr::pull()
+# we need to add another function to the R6 class to have AA counts from the right.
 
-cols_to_round <- grep("percent|fold_change", colnames(joined))
+# as well as showing the percentage for that V call at that position, have an option to also show 
+# the overall proportion of that AA at that position in the whole dataset.
 
-table_data <- joined
-table_data$pos <- as.integer(table_data$pos)
+#joined <- readRDS("data/joined.rds")
+#vcalls <- joined %>%
+#  dplyr::distinct(V_CALL) %>%
+#  dplyr::pull()
+
+#cols_to_round <- grep("percent|fold_change", colnames(joined))
+
+#table_data <- joined
+#table_data$pos <- as.integer(table_data$pos)
 
 available_datasets <- list.files(path = "data", pattern=".rds") |>
   stringr::str_remove(pattern = ".rds")
@@ -68,6 +73,16 @@ ui <- fluidPage(
             style = "jelly", 
             color = "royal"
           )
+        ),
+        column(
+          width= 4,
+          box(
+           id = "aa_lengths", 
+           title = "amino acid lengths", 
+           width = 12, 
+           collapsible = TRUE,
+           plotOutput("aa_length_plot", height = "200px")
+          )
         )
       ),
       shinyWidgets::virtualSelectInput(
@@ -76,31 +91,32 @@ ui <- fluidPage(
         choices = "",
         search = TRUE
       ),
-      box(
-        id = "aa_lengths", 
-        title = "amino acid lengths", 
-        width = 3, 
-        collapsible = TRUE,
-        plotOutput("aa_length_plot")
-      ),
+      # box(
+      #   id = "aa_lengths", 
+      #   title = "amino acid lengths", 
+      #   width = 3, 
+      #   collapsible = TRUE,
+      #   plotOutput("aa_length_plot")
+      # ),
       uiOutput("np1_lengths_plot"),
       uiOutput("np2_lengths_plot"),
       uiOutput("Jcall_barplot"),
       uiOutput("Dcall_barplot"),
-
-      # div(id = "table_div", DT::dataTableOutput("main_table")),
-      # br(),
-      # p(id = "info_msg", "Select a row from the table to display plot for that CDR3"),
-      # div(
-      #   id = "plot_div",
-      #   plotly::plotlyOutput("AAplot"),
-      #   radioButtons(
-      #     "yaxis_data", 
-      #     label = NULL, 
-      #     inline = TRUE,
-      #     choices=c("difference in proportions" = "percent_diff", "fold change" ="fold_change")
-      #   )
-      # ),
+      
+      box_wrapper(
+        box_id="AAplotbox", 
+        box_title="AA counts",
+        plotly::plotlyOutput("AAplot"),
+        box_width = 12
+      ),
+       # plotly::plotlyOutput("AAplot"),
+        #   radioButtons(
+        #     "yaxis_data", 
+        #     label = NULL, 
+        #     inline = TRUE,
+        #     choices=c("difference in proportions" = "percent_diff", "fold change" ="fold_change")
+        #   )
+     # ),
       actionButton("browser", "browser")
     )
   )
@@ -115,6 +131,8 @@ server <- function(input, output) {
   shinyjs::disable("vcall_selector")
   shinyjs::hide("Jcall_barplot")
   shinyjs::hide("Dcall_barplot")
+  shinyjs::hide("AAplotbox")
+  shinyjs::hide("aa_lengths")
   
   ds1 <- reactiveVal()
   ds2 <- reactiveVal()
@@ -125,9 +143,11 @@ server <- function(input, output) {
     if(isTruthy(selectedV())){
       shinyjs::show("Jcall_barplot")
       shinyjs::show("Dcall_barplot")
+      shinyjs::show("AAplotbox")
     } else {
       shinyjs::hide("Jcall_barplot")
       shinyjs::hide("Dcall_barplot")
+      shinyjs::hide("AAplotbox")
     }
   })
   
@@ -193,11 +213,31 @@ server <- function(input, output) {
         choices = allV
       )
       shinyjs::enable("vcall_selector")
+      shinyjs::show("aa_lengths")
     }
-  })
+  })  
 
+  aa_joined_data <- reactive(dplyr::filter(joined(), V_CALL==input$vcall_selector))
+
+  ## joined data ----
+  joined <- reactive({
+    dplyr::full_join(ds1()$aa_counts_left, ds2()$aa_counts_left, by = c("V_CALL", "pos", "value")) |>
+    dplyr::mutate(percent_diff_vcall = aa_ds_percent.x-aa_ds_percent.y) |>
+    dplyr::mutate(percent_diff_ds = aa_ds_percent.x-aa_ds_percent.y) |>
+    dplyr::mutate(fold_change_vcall = dplyr::if_else(aa_percent.x>=aa_percent.y, aa_percent.x/aa_percent.y, -(aa_percent.y/aa_percent.x))) |>
+    dplyr::mutate(fold_change_vcall = dplyr::if_else(is.infinite(fold_change_vcall), percent_diff_vcall, fold_change_vcall)) |>
+    dplyr::mutate(fold_change_vcall = replace(fold_change_vcall, fold_change_vcall > 100, 100)) |>
+    dplyr::mutate(fold_change_vcall = replace(fold_change_vcall, fold_change_vcall < -100, -100)) |>
+    dplyr::mutate(fold_change_ds = dplyr::if_else(aa_ds_percent.x>=aa_ds_percent.y, aa_ds_percent.x/aa_ds_percent.y, -(aa_ds_percent.y/aa_ds_percent.x))) |>
+    dplyr::mutate(fold_change_ds = dplyr::if_else(is.infinite(fold_change_ds), percent_diff_ds, fold_change_ds)) |>
+    dplyr::mutate(fold_change_ds = replace(fold_change_ds, fold_change_ds > 100, 100)) |>
+    dplyr::mutate(fold_change_ds = replace(fold_change_ds, fold_change_ds < -100, -100))
+  }) |>
+    bindCache(input$dataset1_selector, input$dataset2_selector) |>
+    bindEvent(input$load_datasets)
+  
+  
   ## aa lengths ----
-    
   aa_lengths <- reactive({
     
     req(ds1(), ds2())
@@ -252,73 +292,19 @@ server <- function(input, output) {
   mod_barplotServer("Dbarplot", ds=Dcalls, feature="singleD")
   mod_barplotServer("Jbarplot", ds=Jcalls, feature="J_CALL")
   
+  output$AAplot <- renderPlotly({
+    
+    aa_joined_data() |>
+      plotly::plot_ly(x= ~pos, y= ~percent_diff_vcall, color= ~value) %>%
+        plotly::add_text(
+          text = ~value,
+          #hovertext = ~name,
+          #hoverinfo = "text",
+          size = I(20)
+        )
+  })
 }  
 
-  # output$main_table <- DT::renderDataTable({
-  # 
-  #   DT::datatable(
-  #     table_data,
-  #     rownames = FALSE,
-  #     filter = list(position = "top"),
-  #     selection = "single",
-  #     options = list(dom = "fltip", pageLength = 10, scrollX = TRUE, autoWidth = FALSE)
-  #     ) %>% 
-  #     formatStyle(0, target = 'row', lineHeight = '50%', `font-size` ='80%') %>%
-  #     formatRound(cols_to_round)
-  # })
-  
-  # output$AAplot <- renderPlotly({
-  #   req(selected_vcall())
-  #   
-  #   filtered_joined <- joined %>%
-  #     dplyr::filter(V_CALL == selected_vcall()) 
-  #   
-  #   count_values <- filtered_joined %>%
-  #     dplyr::select(aa_count1, aa_count2) %>%
-  #     tidyr::unite(col = both_counts, sep = ":") %>%
-  #     dplyr::pull(both_counts)
-  # 
-  #   filtered_joined %>%
-  #     plotly::plot_ly(
-  #       x= ~pos, 
-  #       y= ~.data[[input$yaxis_data]], 
-  #       color= ~value, 
-  #       customdata=count_values
-  #     ) %>%
-  #     plotly::add_text(
-  #       text = ~value,
-  #       hovertemplate = '<b>counts DS1:DS2</b>: %{customdata}',
-  #       size = I(20)
-  #     ) %>%
-  #     plotly::layout(
-  #       title = list(text = selected_vcall(), pad = list(t=200, b=200)), # pad doesn't seem to be doing anything
-  #       yaxis = list(title = input$yaxis_data)
-  #     )
-    
-    
-
-    # this works with more extensive annotation but we lose the colours - I don't know how to get it to work with the colours
-    # https://github.com/plotly/plotly.R/issues/1548
-    # annotation_list <- split(filtered_joined, seq_len(nrow(filtered_joined)))
-    # filtered_joined %>%
-    #   plotly::plot_ly(
-    #     x= ~pos, 
-    #     y= ~.data[[input$yaxis]], 
-    #     #color= ~value, 
-    #     customdata=annotation_list,
-    #     hovertemplate = paste(
-    #       '<b>DS1 count</b>: %{customdata.aa_count1}', 
-    #       '<br><b>DS2 count</b>: %{customdata.aa_count2}',
-    #       '<br><b>DS1 percentage of %{customdata.value} at position %{customdata.pos}: %{customdata.aa_percent1}' 
-    #     )) %>%
-    #   plotly::add_text(
-    #     text = ~value,
-    #     #color= ~value,
-    #     size = I(20)
-    #   ) %>%
-    #   plotly::layout(title = selected_vcall())
-    #})
-#}
 
 # Run the application 
 shinyApp(ui = ui, server = server)
