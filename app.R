@@ -53,12 +53,7 @@ ui <- fluidPage(
             column(
               width = 2,
               br(),
-              shinyWidgets::actionBttn(
-                inputId = "load_datasets",
-                label = "Load",
-                style = "jelly", 
-                color = "royal"
-              )
+              actionButton(inputId = "load_datasets", label = "Load")
             )
           ),
           br(),
