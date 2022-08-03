@@ -9,6 +9,7 @@ mod_barplotUI <- function(id){#}, plot_height=400){
        width = 3,
        class = "options",
        radioButtons(ns("yaxis"), label=NULL, choices = c("count", "percentage")),
+       br(),
        radioButtons(ns("xaxis"), label=NULL, choices = c("within", "between")),
        actionButton(ns("browser"), "browser")
       ),
@@ -18,7 +19,7 @@ mod_barplotUI <- function(id){#}, plot_height=400){
   )
 }
 
-mod_barplotServer <- function(id, ds, feature) {
+mod_barplotServer <- function(id, ds, feature, colour_palette) {
   moduleServer(id, function(input, output, session) {
     
     ns_server <- NS(id)
@@ -32,13 +33,16 @@ mod_barplotServer <- function(id, ds, feature) {
      if(input$xaxis == "between"){
        p <-  ggplot(ds(), aes(x = .data[[feature]], y=.data[[y_val()]], fill = dataset)) +
          theme(axis.text.x = element_text(angle = 90, size = 8, vjust = 0.5, hjust=1))
+         
      } else {
        p <- ggplot(ds(), aes(x = dataset, y = .data[[y_val()]], fill = .data[[feature]]))
      }
       
      p + 
        geom_col(colour = "black", position = position_dodge2()) +
-       xlab("")
+       xlab("") +
+       colour_palette
+    
     })
     
     output$barplot <- renderPlot(barplot_base())
