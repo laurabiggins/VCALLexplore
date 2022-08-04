@@ -110,21 +110,19 @@ ui <- fluidPage(
               box_title="AA counts",
               plotly::plotlyOutput("AAplot"),
               box_width = 12
+            ), 
+            ## small AA plot ----
+            box_wrapper(
+              box_id="aa_lengths",
+              box_title="amino acid lengths",
+              box_width = 3,
+              mod_densityplotUI(id="aa_length_plot", plot_height=200)
             )
           )
         )
       ),
-      
-      # ## small AA plot ----
-      # box_wrapper(
-      #   box_id="aa_lengths", 
-      #   box_title="amino acid lengths", 
-      #   box_width = 3, 
-      #   mod_densityplotUI(id="aa_length_plot", plot_height=200)
-      # ),
       br(), br(),
-      actionButton("browser", "browser")#,
-      #actionButton("change_datasets", "Change datasets")
+      #actionButton("browser", "browser")
     )
   )
 )
@@ -197,7 +195,7 @@ server <- function(input, output, session) {
         choices = allVgenes()
       )
       shinyjs::enable("vcall_selector")
-      shinyjs::show("aa_lengths")
+      #shinyjs::show("aa_lengths")
       shinyjs::show("select_Vgene_btn")
       dataset_msg(paste0("Datasets loaded: ", ds1()$name, ", ", ds2()$name))
       #show_all()
