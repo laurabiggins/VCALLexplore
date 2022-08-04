@@ -1,17 +1,18 @@
-#plot_div {
-  width: 90%;
-  background-color: #D0ECC0;
-  margin: auto;
-  padding: 20px;
-  border-radius: 10px
+
+body {
+    font-family: arial, helvetica, sans-serif;
+    font-size: 16px;
+    color: #112A46;
+    background-color: #DAE6E7;
+    margin: 5px;
+    padding: 0px;
 }
 
-#info_text{
- /* color: #DF572A;*/
+
+.info_text{
   background: #112A46;
   color: #B2E0D3;
-  text-align: center;
-  padding: 10px;
+  padding: 10px 40px;
   font-size: 28px;
   margin: 20px;
   border-radius: 10px;
@@ -22,10 +23,20 @@
   color: #112A46;
   border-radius: 15px;
   font: bold 18px Arial;
-  border: 3px solid black;
+  border: 3px solid #112A46;
+}
+
+.box {
+  background: #DAE6E7;
+  border: none;
+  margin: 2px;
 }
 
 .plotbox {
+  background-color: #DAE6E7;
+}
+
+.content-wrapper {
   background-color: #DAE6E7;
 }
 
@@ -34,3 +45,32 @@
   font: bold 14px Arial;
   border: 2px solid black;
 }
+
+.box-header {
+  background-color: #DAE6E7;
+  color: #112A46;
+  padding: 10px 10px 0px 10px;
+}
+
+.box-header .box-title { 
+ /* font-size: 22px;*/
+  font: bold 22px Arial;
+}
+
+
+.well {
+  background-color: #112A46
+  color: white;
+}
+
+.options {
+  background-color: #112A46
+  color: white;
+  border-radius: 15px;
+}
+
+.form-group {
+  margin-bottom: 0px;
+}
+
+

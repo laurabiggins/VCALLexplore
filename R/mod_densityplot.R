@@ -20,7 +20,8 @@ mod_densityplotServer <- function(id, ds, feature, colour_palette) {
       
       ggplot(ds(), aes(.data[[feature]], fill = dataset)) +
         geom_density(adjust = 3, alpha =0.8, colour = "black", size=1) +
-        colour_palette
+        colour_palette +
+        theme_minimal()
     })
     
     output$densityplot <- renderPlot(density_obj())

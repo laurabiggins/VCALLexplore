@@ -4,18 +4,33 @@ mod_barplotUI <- function(id){#}, plot_height=400){
   ns <- NS(id)
   
   tags <- tagList(
-    sidebarLayout(
-      sidebarPanel = sidebarPanel(
-       width = 3,
-       class = "options",
-       radioButtons(ns("yaxis"), label=NULL, choices = c("count", "percentage")),
-       br(),
-       radioButtons(ns("xaxis"), label=NULL, choices = c("within", "between")),
-       #actionButton(ns("browser"), "browser")
+    wellPanel(class = "options", style = "background: #112A46; color: white;",
+    plotOutput(outputId = ns("barplot")),
+    br(),
+    fluidRow(
+      column(
+        width = 6, 
+        radioButtons(ns("yaxis"), label=NULL, inline = TRUE, choices = c("count", "%"))
       ),
-      mainPanel = mainPanel(plotOutput(outputId = ns("barplot")), width = 9),
-      position = "right"
+      column(
+        width = 6, 
+        radioButtons(ns("xaxis"), label=NULL, choices = c("within", "between"), inline = TRUE)
+      )
     )
+  ),
+    br(),
+    actionButton(ns("browser"), "browser")
+    #sidebarLayout(
+    #  sidebarPanel = sidebarPanel(
+    #   width = 3,
+    #   class = "options",
+       # radioButtons(ns("yaxis"), label=NULL, choices = c("count", "%")),
+       # br(),
+       # radioButtons(ns("xaxis"), label=NULL, choices = c("within", "between")),
+       # actionButton(ns("browser"), "browser")
+    #  ),
+     # mainPanel = mainPanel(plotOutput(outputId = ns("barplot")), width = 9),
+    #  position = "right"
   )
 }
 
@@ -32,19 +47,23 @@ mod_barplotServer <- function(id, ds, feature, colour_palette) {
 
      if(input$xaxis == "between"){
        p <-  ggplot(ds(), aes(x = .data[[feature]], y=.data[[y_val()]], fill = dataset)) +
-         theme(axis.text.x = element_text(angle = 90, size = 8, vjust = 0.5, hjust=1))
+         theme_minimal() +
+         theme(axis.text.x = element_text(angle = 90, size = 10, vjust = 0.5, hjust=1))
          
      } else {
-       p <- ggplot(ds(), aes(x = dataset, y = .data[[y_val()]], fill = .data[[feature]]))
+       p <- ggplot(ds(), aes(x = dataset, y = .data[[y_val()]], fill = .data[[feature]]))+
+         theme_minimal() +
+         theme(axis.text.x = element_text(size = 14))
      }
       
      p + 
        geom_col(colour = "black", position = position_dodge2()) +
        xlab("") +
-       colour_palette
+       colour_palette #+
+       #theme_minimal()
     
     })
-    
+
     output$barplot <- renderPlot(barplot_base())
     
   })

@@ -1,6 +1,6 @@
 library(shiny)
 library(shinydashboard)
-library(shinyalert)
+library(shinyjs)
 library(magrittr)
 library(plotly)
 library(DT)
@@ -19,6 +19,13 @@ library(ggplot2)
 available_datasets <- list.files(path = "data", pattern=".rds") |>
   stringr::str_remove(pattern = ".rds")
 
+jscode <- "
+shinyjs.collapse = function(boxid) {
+$('#' + boxid).closest('.box').find('[data-widget=collapse]').click();
+}
+"
+
+
 # UI -----
 ui <- fluidPage(
   shinyjs::useShinyjs(),
@@ -27,84 +34,97 @@ ui <- fluidPage(
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
   ),
-  titlePanel("", windowTitle = "V CALLS"),
+  tags$head(tags$title("V CALLS")),
+  #titlePanel(title=NULL, windowTitle = "V CALLS"),
   dashboardPage(
     dashboardHeader(disable = TRUE),
     dashboardSidebar(disable = TRUE),
     dashboardBody(
-      sidebarLayout(
-        ## inputs side panel ----
-        ### datasets ----
-        sidebarPanel(width = 8,
+      ### info message ----
+      htmlOutput(outputId = "info_text", inline=FALSE),
+      br(),
+      tabsetPanel(
+        id="control_panel",
+        type="hidden",
+        tabPanelBody(
+          "load_panel",
           fluidRow(
             column(
-              width = 3,
-              shinyWidgets::virtualSelectInput(
-               inputId="dataset1_selector", 
-               label = "Choose dataset 1", 
-               choices = available_datasets
+              width = 4, offset = 4,
+              verticalLayout(
+                shinyWidgets::virtualSelectInput(
+                 inputId="dataset1_selector", 
+                 label = "Choose dataset 1", 
+                 choices = available_datasets
+                ),
+                br(),
+                shinyWidgets::virtualSelectInput(
+                 inputId="dataset2_selector", 
+                 label = "Choose dataset 2", 
+                 choices = available_datasets,
+                 selected = available_datasets[2]
+                ),
+                br(),
+                fluidRow(
+                  column(
+                    width = 4,
+                    actionButton(inputId = "load_datasets", label = "Load")
+                  ),
+                  column(
+                    width = 6,
+                    actionButton(inputId = "select_Vgene_btn", label = "Select V gene")
+                  )
+                )
               )
-            ),
-            column(width = 3,
-              shinyWidgets::virtualSelectInput(
-               inputId="dataset2_selector", 
-               label = "Choose dataset 2", 
-               choices = available_datasets,
-               selected = available_datasets[2]
-              )
-            ),
-            column(
-              width = 2,
-              br(),
-              actionButton(inputId = "load_datasets", label = "Load")
-            )
-          ),
-         
-          ### V gene selector ----
-          fluidRow(
-            column(
-              width = 3,
-              br(),
-              shinyWidgets::virtualSelectInput(
-                inputId="vcall_selector", 
-                label = "Select V gene", 
-                choices = "",
-                search = TRUE
-              )
-            ),
-            column(width = 2, br(), br(), actionButton("next_Vgene", "Next V gene")),
-            ### info message ----
-            column(
-              width = 7, 
-              htmlOutput(outputId = "info_text")
             )
           )
         ),
-        ## small AA plot ----
-        mainPanel(
-          width = 4, 
-          box_wrapper(
-            box_id="aa_lengths", 
-            box_title="amino acid lengths", 
-            box_width = 12, 
-            mod_densityplotUI(id="aa_length_plot", plot_height=200)),
+        tabPanelBody(
+          "v_selector_panel", 
+          fluidRow(
+           column(
+             width = 3, offset = 1, 
+             br(),
+             shinyWidgets::virtualSelectInput(
+               inputId="vcall_selector", 
+               label = "Select V gene", 
+               choices = "",
+               search = TRUE
+             )
+           ),
+           column(width = 2, br(), br(), actionButton("next_Vgene", "Next V gene")),
+           column(width = 2, offset = 4, br(), br(), actionButton("change_datasets", "Change datasets"))
+          ),
+          br(),
+          div(
+            id="main_plots", 
+            ## main plots ----
+            box_wrapper(box_id="Jbarplotbox", box_title="J call counts", mod_barplotUI(id="Jbarplot")),
+            box_wrapper(box_id="Dbarplotbox", box_title="D call counts", mod_barplotUI(id="Dbarplot")),
+            box_wrapper(box_id="np1plotbox", box_title="np 1 lengths", mod_densityplotUI(id="np1plot")),
+            box_wrapper(box_id="np2plotbox", box_title="np 2 lengths", mod_densityplotUI(id="np2plot")),
+  
+            ### AA letter plots ----
+            box_wrapper(
+              box_id="AAplotbox", 
+              box_title="AA counts",
+              plotly::plotlyOutput("AAplot"),
+              box_width = 12
+            )
+          )
         )
       ),
       
-      ## main plots ----
-      box_wrapper(box_id="Jbarplotbox", box_title="J call counts", mod_barplotUI(id="Jbarplot")),
-      box_wrapper(box_id="Dbarplotbox", box_title="D call counts", mod_barplotUI(id="Dbarplot")),
-      box_wrapper(box_id="np1plotbox", box_title="np 1 lengths", mod_densityplotUI(id="np1plot")),
-      box_wrapper(box_id="np2plotbox", box_title="np 2 lengths", mod_densityplotUI(id="np2plot")),
-
-      ### AA letter plots ----
-      box_wrapper(
-        box_id="AAplotbox", 
-        box_title="AA counts",
-        plotly::plotlyOutput("AAplot"),
-        box_width = 12
-      ),
-      actionButton("browser", "browser")
+      # ## small AA plot ----
+      # box_wrapper(
+      #   box_id="aa_lengths", 
+      #   box_title="amino acid lengths", 
+      #   box_width = 3, 
+      #   mod_densityplotUI(id="aa_length_plot", plot_height=200)
+      # ),
+      br(), br(),
+      actionButton("browser", "browser")#,
+      #actionButton("change_datasets", "Change datasets")
     )
   )
 )
@@ -113,35 +133,44 @@ ui <- fluidPage(
 
 
 # server ----
-server <- function(input, output) {
+server <- function(input, output, session) {
 
   observeEvent(input$browser, browser())
   
   #shinyjs::hideElement("plot_div")
   shinyjs::disable("vcall_selector")
   shinyjs::hide("next_Vgene")
+  shinyjs::hide("select_Vgene_btn")
+  shinyjs::hide("main_plots")
   #shinyjs::hide("aa_lengths")
   #hidePlots()
+  #hide_all()
   
   ds1 <- reactiveVal()
   ds2 <- reactiveVal()
   
   selectedV <- reactive(input$vcall_selector)
   
+  dataset_msg <- reactiveVal("Select and load 2 datasets")
+  v_gene_msg <- reactiveVal("Select a V gene to see more information")
+  
+  observeEvent(input$select_Vgene_btn, {
+    #print("show v gene panel")
+    updateTabsetPanel(session, "control_panel", selected = "v_selector_panel")
+  })
+  observeEvent(input$change_datasets, {
+    updateTabsetPanel(session, "control_panel", selected = "load_panel")
+  })
+  
   ## info message ----
   info_msg <- reactive({
     
     if(!isTruthy(ds1()) | !isTruthy(ds2())) {
-      msg <- "Select and load 2 datasets"
+      msg <- p(class="info_text", style="text-align:center;", dataset_msg())
     } else {
-      datasets_loaded <-  paste("Datasets loaded: ", ds1()$name, ",", ds2()$name)
-      if(!isTruthy(selectedV())) {
-        msg <- paste0(datasets_loaded, br(), "Select a V gene to see more information.")
-      } else {
-        msg <- paste(datasets_loaded, br(), "V gene selected:  ", selectedV())
-      }
+      msg <- p(span(class="info_text", style="float:left;", dataset_msg()), span(class="info_text", style="float:right;", v_gene_msg()))
     }
-    HTML(msg)
+    msg
     
   })
   
@@ -154,6 +183,7 @@ server <- function(input, output) {
   observeEvent(input$load_datasets, {
     
     if(input$dataset1_selector == input$dataset2_selector){
+      #dataset_msg("Choose 2 different datasets!")
       shinyalert::shinyalert(text = "Choose 2 different datasets", type="warning")
     }
     else {
@@ -168,6 +198,9 @@ server <- function(input, output) {
       )
       shinyjs::enable("vcall_selector")
       shinyjs::show("aa_lengths")
+      shinyjs::show("select_Vgene_btn")
+      dataset_msg(paste0("Datasets loaded: ", ds1()$name, ", ", ds2()$name))
+      #show_all()
     }
   }) 
   
@@ -175,8 +208,14 @@ server <- function(input, output) {
   observeEvent(selectedV(), {
     if(isTruthy(selectedV())) {
       shinyjs::show("next_Vgene")
+      v_gene_msg(paste0("V gene:  ", selectedV()))
+      shinyjs::show("main_plots")
     }
-    else shinyjs::hide("next_Vgene")
+    else {
+      shinyjs::hide("next_Vgene")
+      shinyjs::hide("main_plots")
+      v_gene_msg("Select a V gene to see more information")
+    }
   })
   
   ### next button ----

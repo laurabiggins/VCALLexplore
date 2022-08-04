@@ -15,17 +15,17 @@ extra_hex_cols <- c(hex_colours, paste0(hex_colours, "a3"), paste0(hex_colours, 
 colour_palette <- ggplot2::scale_fill_manual(values = extra_hex_cols)
 
 # this is for all the plots that require a V gene to be selected
-hidePlots <- function(){
-  #shinyjs::hide("Jbarplotbox")
-  #shinyjs::hide("Dbarplotbox")
+hide_all <- function(){
+  shinyjs::hide("Jbarplotbox")
+  shinyjs::hide("Dbarplotbox")
   shinyjs::hide("AAplotbox")
   shinyjs::hide("np1plotbox")
   shinyjs::hide("np2plotbox")
 }
 
-showPlots <- function(){
-  #shinyjs::show("Jbarplotbox")
-  #shinyjs::show("Dbarplotbox")
+show_all <- function(){
+  shinyjs::show("Jbarplotbox")
+  shinyjs::show("Dbarplotbox")
   shinyjs::show("np1plotbox")
   shinyjs::show("np2plotbox")
   shinyjs::show("AAplotbox")
