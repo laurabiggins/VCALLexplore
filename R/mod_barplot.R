@@ -11,7 +11,7 @@ mod_barplotUI <- function(id){#}, plot_height=400){
        radioButtons(ns("yaxis"), label=NULL, choices = c("count", "percentage")),
        br(),
        radioButtons(ns("xaxis"), label=NULL, choices = c("within", "between")),
-       actionButton(ns("browser"), "browser")
+       #actionButton(ns("browser"), "browser")
       ),
       mainPanel = mainPanel(plotOutput(outputId = ns("barplot")), width = 9),
       position = "right"

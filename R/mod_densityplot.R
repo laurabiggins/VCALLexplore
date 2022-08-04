@@ -5,7 +5,7 @@ mod_densityplotUI <- function(id, plot_height=400){
   
   tags <- tagList(
     plotOutput(outputId = ns("densityplot"), height = plot_height),
-    actionButton(ns("browser"), "browser")
+    #actionButton(ns("browser"), "browser")
   )
 }
 

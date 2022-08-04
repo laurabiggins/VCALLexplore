@@ -19,6 +19,7 @@ library(ggplot2)
 available_datasets <- list.files(path = "data", pattern=".rds") |>
   stringr::str_remove(pattern = ".rds")
 
+# UI -----
 ui <- fluidPage(
   shinyjs::useShinyjs(),
   shinyFeedback::useShinyFeedback(),
@@ -32,6 +33,8 @@ ui <- fluidPage(
     dashboardSidebar(disable = TRUE),
     dashboardBody(
       sidebarLayout(
+        ## inputs side panel ----
+        ### datasets ----
         sidebarPanel(width = 8,
           fluidRow(
             column(
@@ -56,19 +59,28 @@ ui <- fluidPage(
               actionButton(inputId = "load_datasets", label = "Load")
             )
           ),
-          br(),
+         
+          ### V gene selector ----
           fluidRow(
             column(
               width = 3,
+              br(),
               shinyWidgets::virtualSelectInput(
                 inputId="vcall_selector", 
                 label = "Select V gene", 
                 choices = "",
                 search = TRUE
               )
+            ),
+            column(width = 2, br(), br(), actionButton("next_Vgene", "Next V gene")),
+            ### info message ----
+            column(
+              width = 7, 
+              htmlOutput(outputId = "info_text")
             )
           )
         ),
+        ## small AA plot ----
         mainPanel(
           width = 4, 
           box_wrapper(
@@ -78,12 +90,14 @@ ui <- fluidPage(
             mod_densityplotUI(id="aa_length_plot", plot_height=200)),
         )
       ),
- 
+      
+      ## main plots ----
       box_wrapper(box_id="Jbarplotbox", box_title="J call counts", mod_barplotUI(id="Jbarplot")),
       box_wrapper(box_id="Dbarplotbox", box_title="D call counts", mod_barplotUI(id="Dbarplot")),
       box_wrapper(box_id="np1plotbox", box_title="np 1 lengths", mod_densityplotUI(id="np1plot")),
       box_wrapper(box_id="np2plotbox", box_title="np 2 lengths", mod_densityplotUI(id="np2plot")),
 
+      ### AA letter plots ----
       box_wrapper(
         box_id="AAplotbox", 
         box_title="AA counts",
@@ -98,22 +112,45 @@ ui <- fluidPage(
 
 
 
-# Define server logic required to draw a histogram
+# server ----
 server <- function(input, output) {
 
   observeEvent(input$browser, browser())
   
-  shinyjs::hideElement("plot_div")
+  #shinyjs::hideElement("plot_div")
   shinyjs::disable("vcall_selector")
-  shinyjs::hide("aa_lengths")
-  hidePlots()
+  shinyjs::hide("next_Vgene")
+  #shinyjs::hide("aa_lengths")
+  #hidePlots()
   
   ds1 <- reactiveVal()
   ds2 <- reactiveVal()
   
   selectedV <- reactive(input$vcall_selector)
-
-  # Load datasets ---- 
+  
+  ## info message ----
+  info_msg <- reactive({
+    
+    if(!isTruthy(ds1()) | !isTruthy(ds2())) {
+      msg <- "Select and load 2 datasets"
+    } else {
+      datasets_loaded <-  paste("Datasets loaded: ", ds1()$name, ",", ds2()$name)
+      if(!isTruthy(selectedV())) {
+        msg <- paste0(datasets_loaded, br(), "Select a V gene to see more information.")
+      } else {
+        msg <- paste(datasets_loaded, br(), "V gene selected:  ", selectedV())
+      }
+    }
+    HTML(msg)
+    
+  })
+  
+  output$info_text <- renderUI(info_msg())
+  
+  allVgenes <- reactiveVal()
+  
+  ## Inputs - observeEvents ----
+  ### Load the 2 datasets ---- 
   observeEvent(input$load_datasets, {
     
     if(input$dataset1_selector == input$dataset2_selector){
@@ -122,26 +159,38 @@ server <- function(input, output) {
     else {
       ds1(readRDS(paste0("data/", input$dataset1_selector, ".rds")))
       ds2(readRDS(paste0("data/", input$dataset2_selector, ".rds")))
-      allV <- unique(c(ds1()$V_calls, ds2()$V_calls))
+      #allV <- unique(c(ds1()$V_calls, ds2()$V_calls))
+      allVgenes(unique(c(ds1()$V_calls, ds2()$V_calls)))
       shinyWidgets::updateVirtualSelect(
         inputId="vcall_selector", 
         label = "Select V gene", 
-        choices = allV
+        choices = allVgenes()
       )
       shinyjs::enable("vcall_selector")
       shinyjs::show("aa_lengths")
     }
   }) 
   
-  # select VCALL ----
+  ### select VCALL ----
   observeEvent(selectedV(), {
-    if(isTruthy(selectedV())) showPlots()
-    else hidePlots()
+    if(isTruthy(selectedV())) {
+      shinyjs::show("next_Vgene")
+    }
+    else shinyjs::hide("next_Vgene")
   })
   
-  # Reactive data for plots ----
+  ### next button ----
+  observeEvent(input$next_Vgene, {
+    current_index <- which(allVgenes() == selectedV())
+    shinyWidgets::updateVirtualSelect(
+      inputId="vcall_selector", selected = allVgenes()[current_index+1] 
+    )
+    #browser()
+  })
   
-  ## aa lengths ----
+  ## Reactive data for plots ----
+  
+  ### aa lengths ----
   aa_lengths <- reactive({
     
     req(ds1(), ds2())
@@ -156,8 +205,8 @@ server <- function(input, output) {
       dplyr::bind_rows(dataset1_aa)
   })
   
-  ## np lengths ----
-  ### np1&2 lengths for dataset 1
+  ### np lengths ----
+  #### np1&2 lengths for dataset 1 ----
   np_lengths_ds1 <- reactive({
     req(ds1())
     ds1()$get_np_lengths(selectedV())
@@ -197,7 +246,7 @@ server <- function(input, output) {
   })
   
   
-  ## Jcalls ----  
+  ### Jcalls ----  
   # keep these separate as one dataset may change while the other stays the same.
   Jcalls1 <- reactive({
     req(ds1())
@@ -223,7 +272,7 @@ server <- function(input, output) {
 
   })
   
-  ## Dcalls ----  
+  ### Dcalls ----  
   Dcalls1 <- reactive({
     req(ds1())
     ds1()$get_Dcalls(selectedV())
@@ -247,7 +296,8 @@ server <- function(input, output) {
       dplyr::bind_rows(D2)
   })
   
-  ## AA positions - all joined data ----
+  ### AA positions ----
+  #### all joined data ----
   joined <- reactive({
     dplyr::full_join(ds1()$aa_counts_left, ds2()$aa_counts_left, by = c("V_CALL", "pos", "value")) |>
     dplyr::mutate(percent_diff_vcall = aa_ds_percent.x-aa_ds_percent.y) |>
@@ -264,33 +314,27 @@ server <- function(input, output) {
     bindCache(input$dataset1_selector, input$dataset2_selector) |>
     bindEvent(input$load_datasets)
   
-  ### AA positions - filtered by VCALL ----
+  #### filtered by VCALL ----
   aa_joined_data <- reactive(dplyr::filter(joined(), V_CALL==input$vcall_selector))
   
-  # Plots ----
+  ## Plots ----
   
-  ## AA lengths ----
-  # output$aa_length_plot <- renderPlot({
-  #   
-  #   req(aa_lengths())
-  #   
-  #   ggplot(aa_lengths(), aes(n_aa, fill = dataset)) +
-  #     geom_density(adjust = 3, alpha =0.5, colour = "black")
-  # })
-  
+  ### AA lengths ----
   mod_densityplotServer("aa_length_plot", ds=aa_lengths, feature="n_aa", colour_palette=colour_palette)
-  mod_densityplotServer("np1plot", ds=np1_lengths, feature="NP1_LENGTH", colour_palette=colour_palette)
-  mod_densityplotServer("np2plot", ds=np2_lengths, feature="NP2_LENGTH", colour_palette=colour_palette)
-
   
-  
-  ## Jcalls ----
+  ### Dcalls ----
   mod_barplotServer("Dbarplot", ds=Dcalls, feature="singleD", colour_palette=colour_palette)
   
-  ## Dcalls ----
+  ### Jcalls ----
   mod_barplotServer("Jbarplot", ds=Jcalls, feature="J_CALL", colour_palette=colour_palette)
   
-  ## AA positions ----
+  ### NP1 lengths ----
+  mod_densityplotServer("np1plot", ds=np1_lengths, feature="NP1_LENGTH", colour_palette=colour_palette)
+  
+  ### NP2 lengths ----
+  mod_densityplotServer("np2plot", ds=np2_lengths, feature="NP2_LENGTH", colour_palette=colour_palette)
+  
+  ### AA positions ----
   output$AAplot <- renderPlotly({
     
     aa_joined_data() |>

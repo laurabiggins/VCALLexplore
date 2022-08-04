@@ -6,22 +6,31 @@
   border-radius: 10px
 }
 
-#info_msg{
-  color: #DF572A;
+#info_text{
+ /* color: #DF572A;*/
+  background: #112A46;
+  color: #B2E0D3;
   text-align: center;
-  padding: 20px;
+  padding: 10px;
   font-size: 28px;
+  margin: 20px;
+  border-radius: 10px;
 }
 
-#load_datasets {
-/*  background: #43aa8b;*/
-  background: #90be6d;
-  color: black;
+.btn {
+  background: #B2E0D3;
+  color: #112A46;
   border-radius: 15px;
-  font: bold 20px Arial;
-  border: 4px solid black;
+  font: bold 18px Arial;
+  border: 3px solid black;
 }
 
 .plotbox {
   background-color: #DAE6E7;
+}
+
+.btn-box-tool {
+  padding: 2px;
+  font: bold 14px Arial;
+  border: 2px solid black;
 }
