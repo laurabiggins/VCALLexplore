@@ -360,7 +360,7 @@ server <- function(input, output, session) {
   mod_densityplotServer("aa_length_plot", ds=aa_lengths, feature="n_aa", colour_palette=colour_palette)
   
   ### Dcalls ----
-  mod_barplotServer("Dbarplot", ds=Dcalls, feature="singleD", feature_formatted="D call", selected_V=selectedVcolour_palette=colour_palette)
+  mod_barplotServer("Dbarplot", ds=Dcalls, feature="singleD", feature_formatted="D call", selected_V=selectedV, colour_palette=colour_palette)
   
   ### Jcalls ----
   mod_barplotServer("Jbarplot", ds=Jcalls, feature="J_CALL", feature_formatted="J call", selected_V=selectedV, colour_palette=colour_palette)
