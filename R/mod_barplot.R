@@ -4,37 +4,28 @@ mod_barplotUI <- function(id){#}, plot_height=400){
   ns <- NS(id)
   
   tags <- tagList(
-    wellPanel(class = "options", style = "background: #112A46; color: white;",
-    plotOutput(outputId = ns("barplot")),
-    br(),
-    fluidRow(
-      column(
-        width = 6, 
-        radioButtons(ns("yaxis"), label=NULL, inline = TRUE, choices = c("count", "%"))
-      ),
-      column(
-        width = 6, 
-        radioButtons(ns("xaxis"), label=NULL, choices = c("within", "between"), inline = TRUE)
+    wellPanel(
+      class = "options", 
+      style = "background: #112A46; color: white;",
+      plotOutput(outputId = ns("barplot")),
+      br(),
+      fluidRow(
+        column(
+          width = 6, 
+          radioButtons(ns("yaxis"), label=NULL, inline = TRUE, choices = c("count", "%"))
+        ),
+        column(
+          width = 6, 
+          radioButtons(ns("xaxis"), label=NULL, choices = c("within", "between"), inline = TRUE)
+        )
       )
-    )
-  ),
+    ),
     br(),
     actionButton(ns("browser"), "browser")
-    #sidebarLayout(
-    #  sidebarPanel = sidebarPanel(
-    #   width = 3,
-    #   class = "options",
-       # radioButtons(ns("yaxis"), label=NULL, choices = c("count", "%")),
-       # br(),
-       # radioButtons(ns("xaxis"), label=NULL, choices = c("within", "between")),
-       # actionButton(ns("browser"), "browser")
-    #  ),
-     # mainPanel = mainPanel(plotOutput(outputId = ns("barplot")), width = 9),
-    #  position = "right"
   )
 }
 
-mod_barplotServer <- function(id, ds, feature, colour_palette) {
+mod_barplotServer <- function(id, ds, feature, colour_palette, feature_formatted, selected_V) {
   moduleServer(id, function(input, output, session) {
     
     ns_server <- NS(id)
@@ -42,6 +33,15 @@ mod_barplotServer <- function(id, ds, feature, colour_palette) {
     observeEvent(input$browser, browser())
     
     y_val <- reactive(dplyr::if_else(input$yaxis == "count", "n", "percentage"))
+    
+    plot_title <- reactive({
+      y_info <- switch(y_val(), 
+                       n = "Total counts for each", 
+                       percentage = "Proportion of each")
+        
+      text <- paste(y_info, feature_formatted, "for", selected_V(), "within each dataset")
+      
+    })
     
     barplot_base <- reactive({
 
@@ -59,8 +59,8 @@ mod_barplotServer <- function(id, ds, feature, colour_palette) {
      p + 
        geom_col(colour = "black", position = position_dodge2()) +
        xlab("") +
-       colour_palette #+
-       #theme_minimal()
+       colour_palette +
+       ggtitle(plot_title())
     
     })
 

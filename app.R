@@ -114,7 +114,7 @@ ui <- fluidPage(
             ## small AA plot ----
             box_wrapper(
               box_id="aa_lengths",
-              box_title="amino acid lengths",
+              box_title="V call lengths",
               box_width = 3,
               mod_densityplotUI(id="aa_length_plot", plot_height=200)
             )
@@ -360,10 +360,10 @@ server <- function(input, output, session) {
   mod_densityplotServer("aa_length_plot", ds=aa_lengths, feature="n_aa", colour_palette=colour_palette)
   
   ### Dcalls ----
-  mod_barplotServer("Dbarplot", ds=Dcalls, feature="singleD", colour_palette=colour_palette)
+  mod_barplotServer("Dbarplot", ds=Dcalls, feature="singleD", feature_formatted="D call", selected_V=selectedVcolour_palette=colour_palette)
   
   ### Jcalls ----
-  mod_barplotServer("Jbarplot", ds=Jcalls, feature="J_CALL", colour_palette=colour_palette)
+  mod_barplotServer("Jbarplot", ds=Jcalls, feature="J_CALL", feature_formatted="J call", selected_V=selectedV, colour_palette=colour_palette)
   
   ### NP1 lengths ----
   mod_densityplotServer("np1plot", ds=np1_lengths, feature="NP1_LENGTH", colour_palette=colour_palette)
