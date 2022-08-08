@@ -28,12 +28,21 @@ process_np_lengths <- function(dataset){
 }
 
 # tibble that contains a column called CDR3_IGBLAST_AA (or similar) that contains all the aa sequences
-process_aa_lengths <- function(dataset, cdr3_col = "CDR3_IGBLAST_AA"){
+# not using this but keeping it in in case we want the lengths over the whole dataset
+process_aa_lengths_all <- function(dataset, cdr3_col = "CDR3_IGBLAST_AA"){
   dataset |>
     dplyr::select({cdr3_col}) |>
     dplyr::rename(AA = {cdr3_col}) |>
     dplyr::mutate(n_aa = nchar(AA)) #|>
     #dplyr::count(n_aa)
+}
+
+process_aa_lengths <- function(dataset, cdr3_col = "CDR3_IGBLAST_AA"){
+  dataset |>
+    dplyr::select(V_CALL, {cdr3_col}) |>
+    dplyr::rename(AA = {cdr3_col}) |>
+    dplyr::mutate(n_aa = nchar(AA))# |>
+   #dplyr::count(V_CALL, n_aa)
 }
 
 process_individual_aa_left <- function(dataset, cdr3_col = "CDR3_IGBLAST_AA") {
