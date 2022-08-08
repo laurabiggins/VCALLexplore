@@ -103,14 +103,8 @@ ui <- fluidPage(
             box_wrapper(box_id="Dbarplotbox", box_title="D call counts", mod_barplotUI(id="Dbarplot")),
             box_wrapper(box_id="np1plotbox", box_title="np 1 lengths", mod_densityplotUI(id="np1plot")),
             box_wrapper(box_id="np2plotbox", box_title="np 2 lengths", mod_densityplotUI(id="np2plot")),
+            box_wrapper(box_id="AAplotbox", box_width = 12, box_title="AA lengths", mod_letterplotUI(id="AA_plot")),
   
-            ### AA letter plots ----
-            box_wrapper(
-              box_id="AAplotbox", 
-              box_title="AA counts",
-              plotly::plotlyOutput("AAplot"),
-              box_width = 12
-            ), 
             ## small AA plot ----
             box_wrapper(
               box_id="aa_lengths",
@@ -122,7 +116,7 @@ ui <- fluidPage(
         )
       ),
       br(), br(),
-      #actionButton("browser", "browser")
+      actionButton("browser", "browser")
     )
   )
 )
@@ -337,7 +331,7 @@ server <- function(input, output, session) {
   #### all joined data ----
   joined <- reactive({
     dplyr::full_join(ds1()$aa_counts_left, ds2()$aa_counts_left, by = c("V_CALL", "pos", "value")) |>
-    dplyr::mutate(percent_diff_vcall = aa_ds_percent.x-aa_ds_percent.y) |>
+    dplyr::mutate(percent_diff_vcall = aa_percent.x-aa_percent.y) |>
     dplyr::mutate(percent_diff_ds = aa_ds_percent.x-aa_ds_percent.y) |>
     dplyr::mutate(fold_change_vcall = dplyr::if_else(aa_percent.x>=aa_percent.y, aa_percent.x/aa_percent.y, -(aa_percent.y/aa_percent.x))) |>
     dplyr::mutate(fold_change_vcall = dplyr::if_else(is.infinite(fold_change_vcall), percent_diff_vcall, fold_change_vcall)) |>
@@ -371,18 +365,22 @@ server <- function(input, output, session) {
   ### NP2 lengths ----
   mod_densityplotServer("np2plot", ds=np2_lengths, feature="NP2_LENGTH", colour_palette=colour_palette)
   
+  ### AA as letters  ----
+  mod_letterplotServer("AA_plot", ds=aa_joined_data, colour_palette=colour_palette)
+  
+  
   ### AA positions ----
-  output$AAplot <- renderPlotly({
-    
-    aa_joined_data() |>
-      plotly::plot_ly(x= ~pos, y= ~percent_diff_vcall, color= ~value, colors = extra_hex_cols) |>
-        plotly::add_text(
-          text = ~value,
-          #hovertext = ~name,
-          #hoverinfo = "text",
-          size = I(20)
-        )
-  })
+  # output$AAplot <- renderPlotly({
+  #   
+  #   aa_joined_data() |>
+  #     plotly::plot_ly(x= ~pos, y= ~percent_diff_vcall, color= ~value, colors = extra_hex_cols) |>
+  #       plotly::add_text(
+  #         text = ~value,
+  #         #hovertext = ~name,
+  #         #hoverinfo = "text",
+  #         size = I(20)
+  #       )
+  # })
 }  
 
 
