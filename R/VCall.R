@@ -59,6 +59,12 @@ VCall <- R6::R6Class("VCall",
       }
     },
     
+    get_aa_lengths= function(v_call) {
+      if(v_call %in% self$aa_lengths$V_CALL) {
+        dplyr::filter(self$aa_lengths, V_CALL==v_call)
+      }
+    },
+    
     get_aa_counts_left = function(v_call) {
       if(v_call %in% self$aa_counts_left$V_CALL) {
         dplyr::filter(self$aa_counts_left, V_CALL==v_call)
