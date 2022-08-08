@@ -13,10 +13,10 @@ body {
   background: #112A46;
   color: #B2E0D3;
   padding: 10px 40px;
-  font-size: 28px;
-  margin: 20px;
+  font-size: 24px;
+  margin: 10px;
   border-radius: 10px;
-  min-height: 60px;
+ /* min-height: 60px;*/
 }
 
 .btn {
@@ -39,6 +39,10 @@ body {
 
 .content-wrapper {
   background-color: #DAE6E7;
+}
+
+.content {
+  padding: 1px; 0px; 15px; 15px  
 }
 
 .btn-box-tool {

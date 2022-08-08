@@ -31,17 +31,16 @@ ui <- fluidPage(
     dashboardBody(
       ### info message ----
       htmlOutput(outputId = "info_text", inline=FALSE),
-      br(),
-      fluidRow(
-        column(
-          width = 4, offset = 4,
-          box(id = "load_panel_id", title = NULL, collapsible = FALSE, width = NULL,
-            tabsetPanel(
-              id="control_panel",
-              type="hidden",
-              tabPanelBody(
-                "load_panel",
-                br(),
+      tabsetPanel(
+        id="control_panel",
+        type="hidden",
+        tabPanelBody(
+          "load_panel",
+          br(),
+          fluidRow(
+            column(
+              width = 4, offset = 4,
+              box(id = "load_panel_id", title = NULL, collapsible = FALSE, width = NULL,
                 verticalLayout(
                   shinyWidgets::virtualSelectInput(
                    inputId="dataset1_selector", 
@@ -58,23 +57,22 @@ ui <- fluidPage(
                   br(),
                   actionButton(inputId = "load_datasets", label = "Load")
                 )
-              ),
-              tabPanelBody("v_selector_panel", 
-                br(),
-                fluidRow(
-                  column(width = 9, 
-                    br(),
-                    shinyWidgets::virtualSelectInput(
-                       inputId="vcall_selector", 
-                       label = "Select V gene", 
-                       choices = "",
-                       search = TRUE
-                    )
-                  ),
-                  column(width = 3, br(), br(), actionButton("next_Vgene", "Next V gene"))
-                )
               )
             )
+          )
+        ),
+        tabPanelBody("v_selector_panel", 
+          br(),
+          fluidRow(
+            column(width = 3, offset = 1,
+              shinyWidgets::virtualSelectInput(
+                 inputId="vcall_selector", 
+                 label = "Select V gene", 
+                 choices = "",
+                 search = TRUE
+              )
+            ),
+            column(width = 2, br(), actionButton("next_Vgene", "Next V gene"))
           )
         )
       ),
@@ -112,8 +110,7 @@ server <- function(input, output, session) {
   selectedV <- reactive(input$vcall_selector)
   
   dataset_msg <- reactiveVal("Select and load 2 datasets")
-  v_gene_msg <- reactiveVal("Select a V gene to see more information")
-  
+
   observeEvent(input$change_datasets, {
     updateTabsetPanel(session, "control_panel", selected = "load_panel")
     shinyjs::hide("main_plots")
@@ -125,11 +122,12 @@ server <- function(input, output, session) {
     if(!isTruthy(ds1()) | !isTruthy(ds2())) {
       msg <- p(class="info_text", style="text-align:center;", dataset_msg())
     } else {
-      msg <- p(span(class="info_text", style="float:left;", dataset_msg(), actionButton("change_datasets", "Change")), span(class="info_text", style="float:right;", v_gene_msg()))
+      msg <- p(span(class="info_text", style="float:right;", dataset_msg(), actionButton("change_datasets", "Change")))
     }
     msg
-    
-  })
+  }) |>
+    bindCache(dataset_msg()) |>
+    bindEvent(dataset_msg())
   
   output$info_text <- renderUI(info_msg())
   
@@ -160,13 +158,11 @@ server <- function(input, output, session) {
   observeEvent(selectedV(), {
     if(isTruthy(selectedV())) {
       shinyjs::show("next_Vgene")
-      v_gene_msg(paste0("V gene:  ", selectedV()))
       shinyjs::show("main_plots")
     }
     else {
       shinyjs::hide("next_Vgene")
       shinyjs::hide("main_plots")
-      v_gene_msg("Select a V gene to see more information")
     }
   })
   
