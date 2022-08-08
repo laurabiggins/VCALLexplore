@@ -4,7 +4,11 @@ mod_densityplotUI <- function(id, plot_height=400){
   ns <- NS(id)
   
   tags <- tagList(
-    plotOutput(outputId = ns("densityplot"), height = plot_height),
+    wellPanel(
+      class = "options", 
+      style = "background: #112A46; color: white;",
+      plotOutput(outputId = ns("densityplot"), height = plot_height)
+    )
     #actionButton(ns("browser"), "browser")
   )
 }
