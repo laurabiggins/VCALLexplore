@@ -26,7 +26,7 @@ mod_letterplotUI <- function(id){#}, plot_height=400){
   )
 }
 
-mod_letterplotServer <- function(id, ds, colour_palette, selected_V, ds1_name, ds2_name) {
+mod_letterplotServer <- function(id, ds, raw_colours, selected_V, ds1_name, ds2_name) {
   moduleServer(id, function(input, output, session) {
     
     ns_server <- NS(id)
@@ -65,7 +65,7 @@ mod_letterplotServer <- function(id, ds, colour_palette, selected_V, ds1_name, d
     output$letterplot <- renderPlotly({
       
       ds() |>
-        plotly::plot_ly(x= ~pos, y= ~get(y_type()), color= ~value, colors = extra_hex_cols) |>
+        plotly::plot_ly(x= ~pos, y= ~get(y_type()), color= ~value, colors = raw_colours) |>
         plotly::add_text(
           text = ~value,
           #hovertext = ~name,

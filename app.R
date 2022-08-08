@@ -313,7 +313,7 @@ server <- function(input, output, session) {
   mod_densityplotServer("np2plot", ds=np2_lengths, feature="NP2_LENGTH",  feature_formatted="NP2 lengths", selected_V=selectedV, colour_palette=colour_palette)
   
   ### AA as letters  ----
-  mod_letterplotServer("AA_plot", ds=aa_joined_data, colour_palette=colour_palette, selected_V=selectedV, ds1_name=reactive(ds1()$name), ds2_name=reactive(ds2()$name))
+  mod_letterplotServer("AA_plot", ds=aa_joined_data, raw_colours=extra_hex_cols, selected_V=selectedV, ds1_name=reactive(ds1()$name), ds2_name=reactive(ds2()$name))
 }  
 
 
