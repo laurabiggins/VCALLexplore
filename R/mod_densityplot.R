@@ -13,19 +13,24 @@ mod_densityplotUI <- function(id, plot_height=400){
   )
 }
 
-mod_densityplotServer <- function(id, ds, feature, colour_palette) {
+mod_densityplotServer <- function(id, ds, feature, colour_palette, feature_formatted, selected_V) {
   moduleServer(id, function(input, output, session) {
     
     ns_server <- NS(id)
     
     observeEvent(input$browser, browser())
     
+    plot_title <- reactive({
+      paste("Distribution of", feature_formatted, "for", selected_V())
+    })
+    
     density_obj <- reactive({
       
       ggplot(ds(), aes(.data[[feature]], fill = dataset)) +
         geom_density(adjust = 3, alpha =0.8, colour = "black", size=1) +
         colour_palette +
-        theme_minimal()
+        theme_minimal() +
+        ggtitle(plot_title())
     })
     
     output$densityplot <- renderPlot(density_obj())

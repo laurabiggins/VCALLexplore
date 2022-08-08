@@ -286,27 +286,19 @@ server <- function(input, output, session) {
   #### all joined data ----
   joined <- reactive({
     dplyr::full_join(ds1()$aa_counts_left, ds2()$aa_counts_left, by = c("V_CALL", "pos", "value")) |>
-    dplyr::mutate(percent_diff_vcall = aa_percent.x-aa_percent.y) |>
-    dplyr::mutate(percent_diff_ds = aa_ds_percent.x-aa_ds_percent.y) |>
-    dplyr::mutate(fold_change_vcall = dplyr::if_else(aa_percent.x>=aa_percent.y, aa_percent.x/aa_percent.y, -(aa_percent.y/aa_percent.x))) |>
-    dplyr::mutate(fold_change_vcall = dplyr::if_else(is.infinite(fold_change_vcall), percent_diff_vcall, fold_change_vcall)) |>
-    dplyr::mutate(fold_change_vcall = replace(fold_change_vcall, fold_change_vcall > 100, 100)) |>
-    dplyr::mutate(fold_change_vcall = replace(fold_change_vcall, fold_change_vcall < -100, -100)) |>
-    dplyr::mutate(fold_change_ds = dplyr::if_else(aa_ds_percent.x>=aa_ds_percent.y, aa_ds_percent.x/aa_ds_percent.y, -(aa_ds_percent.y/aa_ds_percent.x))) |>
-    dplyr::mutate(fold_change_ds = dplyr::if_else(is.infinite(fold_change_ds), percent_diff_ds, fold_change_ds)) |>
-    dplyr::mutate(fold_change_ds = replace(fold_change_ds, fold_change_ds > 100, 100)) |>
-    dplyr::mutate(fold_change_ds = replace(fold_change_ds, fold_change_ds < -100, -100))
+    tidy_aa_joined_data()
   }) |>
     bindCache(input$dataset1_selector, input$dataset2_selector) |>
     bindEvent(input$load_datasets)
   
+ 
   #### filtered by VCALL ----
   aa_joined_data <- reactive(dplyr::filter(joined(), V_CALL==input$vcall_selector))
   
   ## Plots ----
   
   ### AA lengths ----
-  mod_densityplotServer("aa_length_plot", ds=aa_lengths, feature="n_aa", colour_palette=colour_palette)
+  mod_densityplotServer("aa_length_plot", ds=aa_lengths, feature="n_aa", feature_formatted="CDR3 lengths", selected_V=selectedV,  colour_palette=colour_palette)
   
   ### Dcalls ----
   mod_barplotServer("Dbarplot", ds=Dcalls, feature="singleD", feature_formatted="D call", selected_V=selectedV, colour_palette=colour_palette)
@@ -315,13 +307,13 @@ server <- function(input, output, session) {
   mod_barplotServer("Jbarplot", ds=Jcalls, feature="J_CALL", feature_formatted="J call", selected_V=selectedV, colour_palette=colour_palette)
   
   ### NP1 lengths ----
-  mod_densityplotServer("np1plot", ds=np1_lengths, feature="NP1_LENGTH", colour_palette=colour_palette)
+  mod_densityplotServer("np1plot", ds=np1_lengths, feature="NP1_LENGTH", feature_formatted="NP1 lengths", selected_V=selectedV, colour_palette=colour_palette)
   
   ### NP2 lengths ----
-  mod_densityplotServer("np2plot", ds=np2_lengths, feature="NP2_LENGTH", colour_palette=colour_palette)
+  mod_densityplotServer("np2plot", ds=np2_lengths, feature="NP2_LENGTH",  feature_formatted="NP2 lengths", selected_V=selectedV, colour_palette=colour_palette)
   
   ### AA as letters  ----
-  mod_letterplotServer("AA_plot", ds=aa_joined_data, colour_palette=colour_palette)
+  mod_letterplotServer("AA_plot", ds=aa_joined_data, colour_palette=colour_palette, selected_V=selectedV, ds1_name=reactive(ds1()$name), ds2_name=reactive(ds2()$name))
 }  
 
 

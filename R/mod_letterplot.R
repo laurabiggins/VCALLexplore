@@ -20,9 +20,9 @@ mod_letterplotUI <- function(id){#}, plot_height=400){
           radioButtons(ns("yaxis2"), label=NULL, choices = c("within VCall" = "within_vcall", "whole dataset" = "whole_dataset"), inline = TRUE)
         )
       )
-    )#,
+    ),
     ##br(),
-    #actionButton(ns("browser"), "browser")
+    actionButton(ns("browser"), "browser")
   )
 }
 
@@ -48,12 +48,15 @@ mod_letterplotServer <- function(id, ds, colour_palette, selected_V, ds1_name, d
       }
     })
 
+    ds1_text <- reactive(paste("Proportion of amino acid at specified position in", ds1_name()))
+    ds2_text <- reactive(paste("proportion of amino acid at specified position in", ds2_name()))
+    
     description <- reactive({
       switch(y_type(), 
-             percent_diff_vcall = "Proportion of amino acid at specified position in ds1 - proportion of amino acid in ds2 for selected V Call.",
-             fold_change_vcall = "Proportion of amino acid at specified position in ds1/proportion of amino acid in ds2 for selected V Call.",
-             fold_change_ds = "Proportion of amino acid at specified position in ds1/proportion of amino acid in ds2 over whole dataset.", 
-             percent_diff_ds = "Proportion of amino acid at specified position in ds1-proportion of amino acid in ds2 over whole dataset."
+             percent_diff_vcall = paste0(ds1_text(), " - ", ds2_text(), " for ", selected_V()),
+             fold_change_vcall = paste0(ds1_text(), "/",  ds2_text(), " for ", selected_V()),
+             fold_change_ds = paste0(ds1_text(), "/",  ds2_text(), " over whole dataset."), 
+             percent_diff_ds = paste0(ds1_text(), " - ", ds2_text(), " over whole dataset.")
              )
     })
     
@@ -71,7 +74,7 @@ mod_letterplotServer <- function(id, ds, colour_palette, selected_V, ds1_name, d
         ) %>%
         layout(
           title = list(
-            text = "Difference in amino acids frequencies along V Call between the 2 datasets", 
+            text = paste("Difference in amino acids frequencies along", selected_V(), "between the 2 datasets"), 
             pad = list(t = 100, b = 200), yanchor = "top"
           ), 
           yaxis = list(title = y_type()), 
