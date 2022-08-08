@@ -14,19 +14,17 @@ extra_hex_cols <- c(hex_colours, paste0(hex_colours, "a3"), paste0(hex_colours, 
 
 colour_palette <- ggplot2::scale_fill_manual(values = extra_hex_cols)
 
-# this is for all the plots that require a V gene to be selected
-hide_all <- function(){
-  shinyjs::hide("Jbarplotbox")
-  shinyjs::hide("Dbarplotbox")
-  shinyjs::hide("AAplotbox")
-  shinyjs::hide("np1plotbox")
-  shinyjs::hide("np2plotbox")
+tidy_aa_joined_data <- function(messy_aa_data){
+  messy_aa_data |>
+    dplyr::mutate(percent_diff_vcall = aa_percent.x-aa_percent.y) |>
+    dplyr::mutate(percent_diff_ds = aa_ds_percent.x-aa_ds_percent.y) |>
+    dplyr::mutate(fold_change_vcall = dplyr::if_else(aa_percent.x>=aa_percent.y, aa_percent.x/aa_percent.y, -(aa_percent.y/aa_percent.x))) |>
+    dplyr::mutate(fold_change_vcall = dplyr::if_else(is.infinite(fold_change_vcall), percent_diff_vcall, fold_change_vcall)) |>
+    dplyr::mutate(fold_change_vcall = replace(fold_change_vcall, fold_change_vcall > 100, 100)) |>
+    dplyr::mutate(fold_change_vcall = replace(fold_change_vcall, fold_change_vcall < -100, -100)) |>
+    dplyr::mutate(fold_change_ds = dplyr::if_else(aa_ds_percent.x>=aa_ds_percent.y, aa_ds_percent.x/aa_ds_percent.y, -(aa_ds_percent.y/aa_ds_percent.x))) |>
+    dplyr::mutate(fold_change_ds = dplyr::if_else(is.infinite(fold_change_ds), percent_diff_ds, fold_change_ds)) |>
+    dplyr::mutate(fold_change_ds = replace(fold_change_ds, fold_change_ds > 100, 100)) |>
+    dplyr::mutate(fold_change_ds = replace(fold_change_ds, fold_change_ds < -100, -100))
 }
 
-show_all <- function(){
-  shinyjs::show("Jbarplotbox")
-  shinyjs::show("Dbarplotbox")
-  shinyjs::show("np1plotbox")
-  shinyjs::show("np2plotbox")
-  shinyjs::show("AAplotbox")
-}
