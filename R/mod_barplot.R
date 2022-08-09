@@ -6,7 +6,7 @@ mod_barplotUI <- function(id){#}, plot_height=400){
   tags <- tagList(
     wellPanel(
       class = "options", 
-      style = "background: #112A46; color: white;",
+      style = "background: #112A46; color: white; padding: 10px",
       plotOutput(outputId = ns("barplot")),
       br(),
       fluidRow(

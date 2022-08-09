@@ -6,7 +6,7 @@ mod_densityplotUI <- function(id, plot_height=400){
   tags <- tagList(
     wellPanel(
       class = "options", 
-      style = "background: #112A46; color: white;",
+      style = "background: #112A46; color: white; padding: 10px",
       plotOutput(outputId = ns("densityplot"), height = plot_height)
     )#,
     #actionButton(ns("browser"), "browser")
