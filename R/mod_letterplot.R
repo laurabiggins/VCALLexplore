@@ -20,9 +20,9 @@ mod_letterplotUI <- function(id){#}, plot_height=400){
           radioButtons(ns("yaxis2"), label=NULL, choices = c("within VCall" = "within_vcall", "whole dataset" = "whole_dataset"), inline = TRUE)
         )
       )
-    ),
+    )#,
     ##br(),
-    actionButton(ns("browser"), "browser")
+    #actionButton(ns("browser"), "browser")
   )
 }
 

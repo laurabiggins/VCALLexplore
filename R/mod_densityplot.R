@@ -8,7 +8,7 @@ mod_densityplotUI <- function(id, plot_height=400){
       class = "options", 
       style = "background: #112A46; color: white;",
       plotOutput(outputId = ns("densityplot"), height = plot_height)
-    )
+    )#,
     #actionButton(ns("browser"), "browser")
   )
 }
@@ -30,6 +30,7 @@ mod_densityplotServer <- function(id, ds, feature, colour_palette, feature_forma
         geom_density(adjust = 3, alpha =0.8, colour = "black", size=1) +
         colour_palette +
         theme_minimal() +
+        theme(plot.title = element_text(size=10)) +
         ggtitle(plot_title())
     })
     
