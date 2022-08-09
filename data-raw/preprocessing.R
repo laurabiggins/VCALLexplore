@@ -10,3 +10,7 @@ saveRDS(my_ds, file = "data/umtboth.rds")
 ds1 <- readr::read_tsv("data-raw/ydall.txt")
 my_ds1 <- parsing_wrapper(ds1, "ydall")
 saveRDS(my_ds1, file = "data/ydall.rds")
+
+ds <- readr::read_csv("D:/temp/ybcboth.csv")
+my_ds <- parsing_wrapper(ds, "ybcboth")
+saveRDS(my_ds, file = "data/ybcboth.rds")
