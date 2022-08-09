@@ -13,7 +13,7 @@ library(ggplot2)
 #table_data <- joined
 #table_data$pos <- as.integer(table_data$pos)
 
-available_datasets <- list.files(path = "data", pattern=".rds") |>
+available_datasets <- local(list.files(path = "data", pattern=".rds")) |>
   stringr::str_remove(pattern = ".rds")
 
 # UI -----
@@ -82,12 +82,14 @@ ui <- fluidPage(
         id="main_plots",
         box_wrapper(box_id="Jbarplotbox", box_title="J call counts", mod_barplotUI(id="Jbarplot")),
         box_wrapper(box_id="Dbarplotbox", box_title="D call counts", mod_barplotUI(id="Dbarplot")),
-        box(box_id="length_plots", title = "Length plots", width = 12, collapsible = TRUE, collapsed = TRUE,
-            fluidRow(
-              column(width = 4, mod_densityplotUI(id="np1plot", plot_height=250)),
-              column(width = 4, mod_densityplotUI(id="np2plot", plot_height=250)),
-              column(width = 4, mod_densityplotUI(id="aa_length_plot", plot_height=250))
-            )
+        #box(box_id="length_plots", title = "Length plots", width = 12, collapsible = TRUE, collapsed = TRUE,
+        box_wrapper(
+          box_id="length_plots", box_title = "Length plots", box_width = 12,    
+          fluidRow(
+            column(width = 4, mod_densityplotUI(id="np1plot", plot_height=250)),
+            column(width = 4, mod_densityplotUI(id="np2plot", plot_height=250)),
+            column(width = 4, mod_densityplotUI(id="aa_length_plot", plot_height=250))
+          )
         ),
         box_wrapper(box_id="AAplotbox", box_width = 12, box_title="AA", mod_letterplotUI(id="AA_plot"))#,
        # actionButton("browser", "browser")
