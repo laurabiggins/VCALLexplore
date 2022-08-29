@@ -2,3 +2,5 @@
 .Rhistory
 .RData
 .Ruserdata
+data-raw/a2dprod.csv
+data-raw/a2bcprod.csv
