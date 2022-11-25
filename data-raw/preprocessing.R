@@ -16,8 +16,14 @@ source("R/VCall.R")
 # saveRDS(my_ds, file = "data/ybcboth.rds")
 
 ds <- readr::read_csv("data-raw/a2bcprod.csv")
+
+# remove the *01 etc from the VCALL name
+my_ds <- ds %>%
+  separate(V_CALL, sep = "\\*", into = c("V_CALL", NA)) 
+  
 my_ds <- parsing_wrapper(ds, "a2bcprod")
 saveRDS(my_ds, file = "data/a2bcprod.rds")
+
 
 ds <- readr::read_csv("data-raw/a2dprod.csv")
 my_ds <- parsing_wrapper(ds, "a2dprod")

@@ -1,4 +1,4 @@
-#' R6 Class Representing a Person
+#' R6 Class
 #'
 #' @description
 #' A VCall contains a set of Vcalls and various other data fields.
