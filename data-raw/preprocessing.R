@@ -1,5 +1,5 @@
-#library(tidyverse)
-#library(R6)
+library(tidyverse)
+library(R6)
 source("R/processing_utils.R")
 source("R/VCall.R")
 
@@ -16,15 +16,21 @@ source("R/VCall.R")
 # saveRDS(my_ds, file = "data/ybcboth.rds")
 
 ds <- readr::read_csv("data-raw/a2bcprod.csv")
-
 # remove the *01 etc from the VCALL name
 my_ds <- ds %>%
-  separate(V_CALL, sep = "\\*", into = c("V_CALL", NA)) 
-  
-my_ds <- parsing_wrapper(ds, "a2bcprod")
+  separate(V_CALL, sep = "\\*", into = c("V_CALL", NA)) #%>%
+  #separate(J_CALL, sep = "\\*", into = c("J_CALL", NA)) #%>%
+  #separate(D_CALL, sep = "\\*", into = c("D_CALL", NA)) # some Dcalls have >1, we filter this later on to kick out any extras, but this will create a warning about extra pieces being discarded.
+my_ds <- parsing_wrapper(my_ds, "a2bcprod")
 saveRDS(my_ds, file = "data/a2bcprod.rds")
 
 
+  
 ds <- readr::read_csv("data-raw/a2dprod.csv")
-my_ds <- parsing_wrapper(ds, "a2dprod")
+# remove the *01 etc from the VCALL name
+my_ds <- ds %>%
+  separate(V_CALL, sep = "\\*", into = c("V_CALL", NA))#%>%
+  #separate(J_CALL, sep = "\\*", into = c("J_CALL", NA)) #%>%
+  #separate(D_CALL, sep = "\\*", into = c("D_CALL", NA)) # some Dcalls have >1, we filter this later on to kick out any extras, but this will create a warning about extra pieces being discarded.
+my_ds <- parsing_wrapper(my_ds, "a2dprod")
 saveRDS(my_ds, file = "data/a2dprod.rds")
