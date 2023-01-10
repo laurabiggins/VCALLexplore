@@ -12,7 +12,7 @@ box_wrapper <- function(box_id, box_title, panel_tags, box_width = 6, collapsibl
 hex_colours <- c("#f9c74f", "#43aa8b", "#f3722c", "#577590", "#f94144", "#90be6d", "#f8961e", "#4a4e69") 
 extra_hex_cols <- c(hex_colours, paste0(hex_colours, "a3"), paste0(hex_colours, "5e"))
 
-colour_palette <- ggplot2::scale_fill_manual(values = extra_hex_cols)
+colour_palette <- ggplot2::scale_fill_manual(values = c(extra_hex_cols, extra_hex_cols))
 
 tidy_aa_joined_data <- function(messy_aa_data){
   messy_aa_data |>
