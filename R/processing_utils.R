@@ -1,9 +1,9 @@
 process_J_calls <- function(dataset){
   dplyr::count(dataset, V_CALL, J_CALL) |> 
   dplyr::group_by(V_CALL) |>  
-  dplyr::mutate(percentage_per_Vgene = (n/sum(n))*100) |>
+  dplyr::mutate(percent_per_Vgene = (n/sum(n))*100) |>
   dplyr::ungroup() |>
-  dplyr::mutate(percentage_ds = (n/sum(n))*100)
+  dplyr::mutate(percent_ds = (n/sum(n))*100)
 }
 
 process_D_calls <- function(dataset){
@@ -13,9 +13,9 @@ process_D_calls <- function(dataset){
     tidyr::separate(D_CALL, into=c("singleD"), sep = ",", extra = "drop") |>
     dplyr::count(V_CALL, singleD) |>
     dplyr::group_by(V_CALL) |> 
-    dplyr::mutate(percentage_per_Vgene = (n/sum(n))*100) |>
+    dplyr::mutate(percent_per_Vgene = (n/sum(n))*100) |>
     dplyr::ungroup() |>
-    dplyr::mutate(percentage_ds = (n/sum(n))*100)
+    dplyr::mutate(percent_ds = (n/sum(n))*100)
 }
 
 process_V_calls <- function(dataset){

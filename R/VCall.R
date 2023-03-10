@@ -12,7 +12,8 @@ VCall <- R6::R6Class("VCall",
     #' @field name Name of the dataset.
     name = NULL,
     
-    #' @field J_calls The J calls.
+    #' @field J_calls The J calls. Dataset containing the columns:
+    #' J_CALL, V_CALL, n, percentage, to add: V_GROUP, RF, CDR3_length
     J_calls = NA,
     D_calls = NA,
     V_calls = NA,
@@ -41,9 +42,16 @@ VCall <- R6::R6Class("VCall",
       self$aa_counts_left <- aa_counts_left
     },
     
-    get_Jcalls = function(v_call) {
-      if(v_call %in% self$J_calls$V_CALL) {
-        dplyr::filter(self$J_calls, V_CALL==v_call)
+    get_Jcalls = function(v_call, vgroup = FALSE) {
+      
+      if(group == TRUE){
+        
+        
+      }
+      else {
+        if(v_call %in% self$J_calls$V_CALL) {
+          return(dplyr::filter(self$J_calls, V_CALL==v_call))
+        }
       }
     },
     
