@@ -1,9 +1,44 @@
+# takes input tibble with a column called V_CALL containing for e.g. "IGHV1-55" "IGHV1-67" "IGHV3-3", strips any characters after "-" and adds a column called Vgroup containing the stripped names e.g. "IGHV1-55" "IGHV1-67" "IGHV3-3".
+
+add_Vgroup <- function(tbl){
+  tbl %>%
+    tidyr::separate_wider_delim(
+      cols = V_CALL,
+      delim = "-",
+      names = c("Vgroup", NA),
+      cols_remove = FALSE,
+      too_many = "drop"
+    )
+}
+
+# process_J_calls <- function(dataset){
+#   dplyr::count(dataset, V_CALL, J_CALL) |> 
+#   dplyr::group_by(V_CALL) |>  
+#   dplyr::mutate(percent_per_Vgene = (n/sum(n))*100) |>
+#   dplyr::ungroup() |>
+#   dplyr::mutate(percent_ds = (n/sum(n))*100)
+# }
+
+
+# This is the initial preprocessing. These values will be used in the plots by
+# default, unless any filtering for RF or CDR3 length has been specified, in 
+# which case we do this on the fly, as part of a VCall object method, and 
+# overwrite the "n", "percent_per_Vgene", "percent_per_Vgroup" and "percent_ds" columns. 
+# process_J_calls <- function(dataset){
+#   dplyr::add_count(dataset, V_CALL, J_CALL) |> 
+#     dplyr::group_by(V_CALL) |>  
+#     dplyr::mutate(percent_per_Vgene = (n/sum(n))*100) |>
+#     dplyr::ungroup() |>
+#     dplyr::group_by(Vgroup) |>  
+#     dplyr::mutate(percent_per_Vgroup = (n/sum(n))*100) |>
+#     dplyr::ungroup() |>
+#     dplyr::mutate(percent_ds = (n/sum(n))*100) |>
+#     select(Vgroup, V_CALL, J_CALL, DRF, CDR3_LENGTH, n, percent_per_Vgene, percent_per_Vgroup, percent_ds)
+# }
+
 process_J_calls <- function(dataset){
-  dplyr::count(dataset, V_CALL, J_CALL) |> 
-  dplyr::group_by(V_CALL) |>  
-  dplyr::mutate(percent_per_Vgene = (n/sum(n))*100) |>
-  dplyr::ungroup() |>
-  dplyr::mutate(percent_ds = (n/sum(n))*100)
+  select(dataset, SEQUENCE_ID, Vgroup, V_CALL, J_CALL, DRF, CDR3_LENGTH)  %>%
+    dplyr::add_count(J_CALL, name = "ds_Jtotal")
 }
 
 process_D_calls <- function(dataset){
