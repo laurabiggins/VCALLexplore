@@ -47,33 +47,35 @@ my_ds <- parsing_wrapper(my_ds, "SamYD")
 saveRDS(my_ds, file = "data/SamYD.rds")
 
 
-x <- read_delim("D:/temp/Harry_White/BCcurated.csv")
-y <- read_delim("D:/temp/Harry_White/FOcurated.csv")
+# x <- read_delim("D:/temp/Harry_White/BCcurated.csv")
+# y <- read_delim("D:/temp/Harry_White/FOcurated.csv")
 
 # add a column with V group
 # 
-my_ds <- read_delim("D:/temp/Harry_White/BCcurated.csv") %>%
-  add_Vgroup() %>%
-  parsing_wrapper("BC")
+# my_ds <- read_delim("D:/temp/Harry_White/BCcurated.csv") %>%
+#   add_Vgroup() %>%
+#   parsing_wrapper("BC")
  
 
-my_ds$get_Jcalls(vgroup = "IGHV13", drf = 2, CDR3_length = 12)
-my_ds$J_calls
-z <- my_ds$get_Jcalls()
+# my_ds$get_Jcalls(vgroup = "IGHV13", drf = 2, CDR3_length = 12)
+# my_ds$J_calls
+# z <- my_ds$get_Jcalls()
 
 my_ds$get_Jcalls(vgroup = "IGHV13", drf = NULL, CDR3_length = 12) %>%
   dplyr::add_count(J_CALL) %>%
-  mutate(Jpercent_perDS = (n/ds_Jtotal)*100)
+  mutate(Jpercent_perDS = (n/ds_Jtotal)*100) %>%
+  select(J_CALL, n, Jpercent_perDS) %>%
+  distinct()
   
 # I think we need to keep in the ID column so that we don't lose the count info
 
 
 
 #J <- process_J_calls(x)
-#my_ds <- parsing_wrapper(read_delim("D:/temp/Harry_White/BCcurated.csv"), "BC")
- # saveRDS(my_ds, file = "data/BC.rds")
- # my_ds <- parsing_wrapper(read_delim("D:/temp/Harry_White/T1curated.csv"), "T1")
- # saveRDS(my_ds, file = "data/T1.rds")
+my_ds <- parsing_wrapper(read_delim("D:/temp/Harry_White/BCcurated.csv"), "BC")
+saveRDS(my_ds, file = "data/BC.rds")
+my_ds <- parsing_wrapper(read_delim("D:/temp/Harry_White/T1curated.csv"), "T1")
+saveRDS(my_ds, file = "data/T1.rds")
 
 
 
