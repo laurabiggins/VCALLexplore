@@ -104,7 +104,7 @@ process_individual_aa_left <- function(dataset, cdr3_col = "CDR3_IGBLAST_AA") {
 
 
 parsing_wrapper <- function(dataset, dataset_name){
-  
+  dataset <- add_Vgroup(dataset)
   J <- process_J_calls(dataset)
   D <- process_D_calls(dataset)
   V <- process_V_calls(dataset)

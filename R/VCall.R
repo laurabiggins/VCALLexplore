@@ -83,10 +83,10 @@ VCall <- R6::R6Class("VCall",
       }  
       filtJ
     },
-    get_total_Jcounts = function() {
-      
-      
-    }
+    # get_total_Jcounts = function() {
+    #   
+    #   
+    # }
     
     get_Dcalls = function(v_call) {
       if(v_call %in% self$D_calls$V_CALL) {

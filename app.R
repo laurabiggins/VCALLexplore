@@ -91,8 +91,8 @@ ui <- fluidPage(
             column(width = 4, mod_densityplotUI(id="aa_length_plot", plot_height=250))
           )
         ),
-        box_wrapper(box_id="AAplotbox", box_width = 12, box_title="AA", mod_letterplotUI(id="AA_plot"))#,
-       # actionButton("browser", "browser")
+        box_wrapper(box_id="AAplotbox", box_width = 12, box_title="AA", mod_letterplotUI(id="AA_plot")),
+        actionButton("browser", "browser")
       )
     )
   )
@@ -238,12 +238,22 @@ server <- function(input, output, session) {
   # keep these separate as one dataset may change while the other stays the same.
   Jcalls1 <- reactive({
     req(ds1())
-    ds1()$get_Jcalls(selectedV())
+    ds1()$get_Jcalls(v_call = selectedV()) %>%
+      dplyr::add_count(J_CALL) %>%
+      mutate(percent_ds = (n/ds_Jtotal)*100) %>%
+      select(J_CALL, n, percent_ds) %>%
+      distinct()
+    
+    
   })
   
   Jcalls2 <- reactive({
     req(ds2())
-    ds2()$get_Jcalls(selectedV())
+    ds2()$get_Jcalls(v_call = selectedV()) %>%
+      dplyr::add_count(J_CALL) %>%
+      mutate(percent_ds = (n/ds_Jtotal)*100) %>%
+      select(J_CALL, n, percent_ds) %>%
+      distinct()
   })
   
   # joined Jcalls for using in plot

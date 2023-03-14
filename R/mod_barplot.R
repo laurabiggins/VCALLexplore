@@ -14,7 +14,7 @@ mod_barplotUI <- function(id){#}, plot_height=400){
           width = 6, 
           radioButtons(ns("yaxis"), label=NULL, inline = TRUE, 
                        choices = c("count" = "count", 
-                                   "% V gene" = "percentV", 
+                                   #"% V gene" = "percentV", 
                                    "% whole dataset" = "percent_ds"
                                    )
                        )
@@ -40,7 +40,7 @@ mod_barplotServer <- function(id, ds, feature, colour_palette, feature_formatted
     y_val <- reactive({
       switch(input$yaxis,
         count = "n", 
-        percentV = "percent_per_Vgene",
+        #percentV = "percent_per_Vgene",
         percent_ds = "percent_ds"
       )
     })
@@ -49,10 +49,10 @@ mod_barplotServer <- function(id, ds, feature, colour_palette, feature_formatted
     
     plot_title <- reactive({
       y_info <- switch(y_val(), 
-                       n = "Total counts for each", 
-                       percentage = "Proportion of each")
+                       n = "Counts for each", 
+                       percent_ds = "J call count/Total no of that J call in entire dataset")
         
-      text <- paste(y_info, feature_formatted, "for", selected_V(), "within each dataset")
+      text <- paste(y_info, feature_formatted, "for", selected_V(), "filtered as specified above.")
       
     })
     
