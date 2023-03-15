@@ -45,14 +45,16 @@ ui <- fluidPage(
                   shinyWidgets::virtualSelectInput(
                    inputId="dataset1_selector", 
                    label = "Choose dataset 1", 
-                   choices = available_datasets
+                   choices = available_datasets,
+                   selected = "BC"
                   ),
                   br(),
                   shinyWidgets::virtualSelectInput(
                    inputId="dataset2_selector", 
                    label = "Choose dataset 2", 
                    choices = available_datasets,
-                   selected = available_datasets[2]
+                   #selected = available_datasets[2]
+                   selected = "T1"
                   ),
                   br(),
                   actionButton(inputId = "load_datasets", label = "Load")
