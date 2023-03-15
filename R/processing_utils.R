@@ -60,6 +60,15 @@ process_V_calls <- function(dataset){
     dplyr::pull(V_CALL)
 }
 
+
+process_V_groups <- function(dataset){
+  dataset |>
+    dplyr::select(Vgroup) |>
+    dplyr::distinct() |>
+    dplyr::pull(Vgroup)
+}
+
+
 process_np_lengths <- function(dataset){
   dplyr::select(dataset, V_CALL, NP1_LENGTH, NP2_LENGTH)
 }
@@ -108,8 +117,17 @@ parsing_wrapper <- function(dataset, dataset_name){
   J <- process_J_calls(dataset)
   D <- process_D_calls(dataset)
   V <- process_V_calls(dataset)
+  Vgp <- process_V_groups(dataset)
   np <- process_np_lengths(dataset)
   aa <- process_aa_lengths(dataset)
   aa_count_left <- process_individual_aa_left(dataset)
-  VCall$new(dataset_name, J_calls=J, D_calls=D, V_calls=V, np_lengths = np, aa_lengths = aa, aa_counts_left = aa_count_left)
+  VCall$new(
+    dataset_name, 
+    J_calls=J, 
+    D_calls=D, 
+    V_calls=V,
+    V_groups = Vgp,
+    np_lengths = np,
+    aa_lengths = aa, 
+    aa_counts_left = aa_count_left)
 }

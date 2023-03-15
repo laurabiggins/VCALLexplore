@@ -20,7 +20,7 @@ available_datasets <- local(list.files(path = "data", pattern=".rds")) |>
 ui <- fluidPage(
   shinyjs::useShinyjs(),
   shinyFeedback::useShinyFeedback(),
-  shinyalert::useShinyalert(),
+  #shinyalert::useShinyalert(),
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
   ),
@@ -63,18 +63,43 @@ ui <- fluidPage(
             )
           )
         ),
-        tabPanelBody("v_selector_panel", 
-          br(),
-          fluidRow(
-            column(width = 3, offset = 1,
-              shinyWidgets::virtualSelectInput(
-                 inputId="vcall_selector", 
-                 label = "Select V gene", 
-                 choices = "",
-                 search = TRUE
+        tabPanelBody(
+          "v_selector_panel", 
+          tabsetPanel(
+            id = "vtype_selection", 
+            tabPanel(title = "V gene", 
+              br(),
+              fluidRow(
+                column(width = 3, offset = 1,
+                  shinyWidgets::virtualSelectInput(
+                     inputId="vcall_selector", 
+                     label = "Select V gene", 
+                     choices = "",
+                     search = TRUE
+                  )
+                ),
+                column(width = 2, br(), actionButton("next_Vgene", "Next V gene"))
               )
             ),
-            column(width = 2, br(), actionButton("next_Vgene", "Next V gene"))
+            tabPanel(
+              title = "V group",
+              br(),
+              fluidRow(
+                column(width = 3, offset = 1,
+                       shinyWidgets::virtualSelectInput(
+                         inputId="vgroup_selector", 
+                         label = "Select V group", 
+                         choices = "",
+                         search = TRUE
+                       )
+                ),
+                column(width = 2, br(), actionButton("next_Vgroup", "Next V group"))
+              )
+            ),
+            tabPanel(
+              title = "All V genes", 
+              actionButton(inputId = "allVgenes", label = "Combine all V calls")
+            )
           )
         )
       ),
@@ -106,12 +131,14 @@ server <- function(input, output, session) {
   observeEvent(input$browser, browser())
   
   shinyjs::hide("next_Vgene")
+  shinyjs::hide("next_Vgroup")
   shinyjs::hide("main_plots")
 
   ds1 <- reactiveVal()
   ds2 <- reactiveVal()
   
   selectedV <- reactive(input$vcall_selector)
+  selectedVgroup <- reactive(input$vgroup_selector)
   
   dataset_msg <- reactiveVal("Select and load 2 datasets")
 
@@ -136,6 +163,7 @@ server <- function(input, output, session) {
   output$info_text <- renderUI(info_msg())
   
   allVgenes <- reactiveVal()
+  allVgroups <- reactiveVal()
   
   ## Inputs - observeEvents ----
   ### Load the 2 datasets ---- 
@@ -148,10 +176,16 @@ server <- function(input, output, session) {
       ds1(readRDS(paste0("data/", input$dataset1_selector, ".rds")))
       ds2(readRDS(paste0("data/", input$dataset2_selector, ".rds")))
       allVgenes(unique(c(ds1()$V_calls, ds2()$V_calls)))
+      allVgroups(unique(c(ds1()$V_groups, ds2()$V_groups)))
       shinyWidgets::updateVirtualSelect(
         inputId="vcall_selector", 
         label = "Select V gene", 
         choices = allVgenes()
+      )
+      shinyWidgets::updateVirtualSelect(
+        inputId="vgroup_selector", 
+        label = "Select V group", 
+        choices = allVgroups()
       )
       dataset_msg(paste0("Datasets loaded: ", ds1()$name, ", ", ds2()$name))
       updateTabsetPanel(session, "control_panel", selected = "v_selector_panel")
