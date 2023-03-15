@@ -17,6 +17,7 @@ VCall <- R6::R6Class("VCall",
     J_calls = NA,
     D_calls = NA,
     V_calls = NA,
+    V_groups = NA,
     np_lengths = NA,
     aa_lengths = NA,
     aa_counts_left = NA,
@@ -26,6 +27,7 @@ VCall <- R6::R6Class("VCall",
       J_calls=NA, 
       D_calls=NA, 
       V_calls = NA,
+      V_groups = NA,
       np_lengths = NA, 
       aa_lengths = NA,
       aa_counts_left = NA
@@ -36,7 +38,8 @@ VCall <- R6::R6Class("VCall",
       self$name <- name
       self$J_calls <- J_calls
       self$D_calls <- D_calls
-      self$V_calls = V_calls
+      self$V_calls <- V_calls
+      self$V_groups <- V_groups
       self$np_lengths <- np_lengths
       self$aa_lengths <- aa_lengths
       self$aa_counts_left <- aa_counts_left
