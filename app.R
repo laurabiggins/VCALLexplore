@@ -67,7 +67,8 @@ ui <- fluidPage(
           "v_selector_panel", 
           tabsetPanel(
             id = "vtype_selection", 
-            tabPanel(title = "V gene", 
+            tabPanel(title = "V gene",
+                     value = "vgene",
               br(),
               fluidRow(
                 column(width = 3, offset = 1,
@@ -83,6 +84,7 @@ ui <- fluidPage(
             ),
             tabPanel(
               title = "V group",
+              value = "vgroup",
               br(),
               fluidRow(
                 column(width = 3, offset = 1,
@@ -97,7 +99,8 @@ ui <- fluidPage(
               )
             ),
             tabPanel(
-              title = "All V genes", 
+              title = "All V genes",
+              value = "allV",
               actionButton(inputId = "allVgenes", label = "Combine all V calls")
             )
           )
@@ -137,7 +140,12 @@ server <- function(input, output, session) {
   ds1 <- reactiveVal()
   ds2 <- reactiveVal()
   
+  # vtype  - determined by the selected tab - vgene, vgroup or allV
+  vtype <- reactive(input$vtype_selection)
+  
+  # an individual v gene
   selectedV <- reactive(input$vcall_selector)
+  # a group of selected v genes
   selectedVgroup <- reactive(input$vgroup_selector)
   
   dataset_msg <- reactiveVal("Select and load 2 datasets")
@@ -196,21 +204,53 @@ server <- function(input, output, session) {
   observeEvent(selectedV(), {
     if(isTruthy(selectedV())) {
       shinyjs::show("next_Vgene")
-      shinyjs::show("main_plots")
+     # shinyjs::show("main_plots")
     }
     else {
       shinyjs::hide("next_Vgene")
+     # shinyjs::hide("main_plots")
+    }
+  })
+  
+  observeEvent(chosenV(), {
+    if(isTruthy(chosenV())) {
+       shinyjs::show("main_plots")
+    }
+    else {
       shinyjs::hide("main_plots")
     }
   })
   
-  ### next button ----
+  observeEvent(selectedVgroup(), {
+    if(isTruthy(selectedVgroup())) {
+      shinyjs::show("next_Vgroup")
+      #shinyjs::show("main_plots")
+    }
+    else {
+      shinyjs::hide("next_Vgroup")
+      #shinyjs::hide("main_plots")
+    }
+  })
+  
+  ### next V gene button ----
   observeEvent(input$next_Vgene, {
     current_index <- which(allVgenes() == selectedV())
     shinyWidgets::updateVirtualSelect(
       inputId="vcall_selector", selected = allVgenes()[current_index+1] 
     )
   })
+  
+  ### next V group button ----
+  observeEvent(input$next_Vgroup, {
+    current_index <- which(allVgroups() == selectedVgroup())
+    shinyWidgets::updateVirtualSelect(
+      inputId="vgroup_selector", selected = allVgroups()[current_index+1] 
+    )
+  })
+  
+  
+  
+  
   
   ## Reactive data for plots ----
   
@@ -269,23 +309,41 @@ server <- function(input, output, session) {
       dplyr::bind_rows(dataset1_np2)
   })
   
+  ## V selection ----
+  chosenVlist <- reactive({
+
+    if(vtype() == "vgroup"){
+      if(isTruthy(selectedVgroup())){
+        list(vgroup = selectedVgroup(), v_call = NULL)
+      }
+    } else if(vtype() == "vgene"){
+      if(isTruthy(selectedV())){
+        list(vgroup = NULL, v_call = selectedV())
+      }
+    }
+  })
+  
+  chosenV <- reactive(Filter(Negate(is.null), chosenVlist())[[1]])
   
   ### Jcalls ----  
   # keep these separate as one dataset may change while the other stays the same.
+  # TODO: I don't think the %age dataset is right - check what it's doing.
   Jcalls1 <- reactive({
+    
     req(ds1())
-    ds1()$get_Jcalls(v_call = selectedV()) %>%
+    req(chosenVlist())
+    do.call(ds1()$get_Jcalls, chosenVlist()) %>%
       dplyr::add_count(J_CALL) %>%
       mutate(percent_ds = (n/ds_Jtotal)*100) %>%
       select(J_CALL, n, percent_ds) %>%
       distinct()
-    
-    
   })
   
   Jcalls2 <- reactive({
+    
     req(ds2())
-    ds2()$get_Jcalls(v_call = selectedV()) %>%
+    req(chosenVlist())
+    do.call(ds2()$get_Jcalls, chosenVlist()) %>%
       dplyr::add_count(J_CALL) %>%
       mutate(percent_ds = (n/ds_Jtotal)*100) %>%
       select(J_CALL, n, percent_ds) %>%
@@ -352,7 +410,7 @@ server <- function(input, output, session) {
   mod_barplotServer("Dbarplot", ds=Dcalls, feature="singleD", feature_formatted="D call", selected_V=selectedV, colour_palette=colour_palette)
   
   ### Jcalls ----
-  mod_barplotServer("Jbarplot", ds=Jcalls, feature="J_CALL", feature_formatted="J call", selected_V=selectedV, colour_palette=colour_palette)
+  mod_barplotServer("Jbarplot", ds=Jcalls, feature="J_CALL", feature_formatted="J call", selected_V=chosenV, colour_palette=colour_palette)
   
   ### NP1 lengths ----
   mod_densityplotServer("np1plot", ds=np1_lengths, feature="NP1_LENGTH", feature_formatted="NP1 lengths", selected_V=selectedV, colour_palette=colour_palette)
