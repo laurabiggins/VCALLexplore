@@ -64,44 +64,102 @@ ui <- fluidPage(
           )
         ),
         tabPanelBody(
-          "v_selector_panel", 
-          tabsetPanel(
-            id = "vtype_selection", 
-            tabPanel(title = "V gene",
-                     value = "vgene",
-              br(),
-              fluidRow(
-                column(width = 3, offset = 1,
-                  shinyWidgets::virtualSelectInput(
-                     inputId="vcall_selector", 
-                     label = "Select V gene", 
-                     choices = "",
-                     search = TRUE
-                  )
-                ),
-                column(width = 2, br(), actionButton("next_Vgene", "Next V gene"))
-              )
-            ),
-            tabPanel(
-              title = "V group",
-              value = "vgroup",
-              br(),
-              fluidRow(
-                column(width = 3, offset = 1,
-                       shinyWidgets::virtualSelectInput(
-                         inputId="vgroup_selector", 
-                         label = "Select V group", 
+          "v_selector_panel",
+          fluidRow(
+            column(width = 4,
+              tabsetPanel(
+                id = "vtype_selection", 
+                tabPanel(title = "V gene",
+                         value = "vgene",
+                  br(),
+                  fluidRow(
+                    column(width = 6, offset = 1,
+                      shinyWidgets::virtualSelectInput(
+                         inputId="vcall_selector", 
+                         label = "Select V gene", 
                          choices = "",
                          search = TRUE
-                       )
+                      )
+                    ),
+                    column(width = 5, br(), actionButton("next_Vgene", "Next V gene"))
+                  )
                 ),
-                column(width = 2, br(), actionButton("next_Vgroup", "Next V group"))
+                tabPanel(
+                  title = "V group",
+                  value = "vgroup",
+                  br(),
+                  fluidRow(
+                    column(width = 7, offset = 1,
+                           shinyWidgets::virtualSelectInput(
+                             inputId="vgroup_selector", 
+                             label = "Select V group", 
+                             choices = "",
+                             search = TRUE
+                           )
+                    ),
+                    column(width = 4, br(), actionButton("next_Vgroup", "Next V group"))
+                  )
+                ),
+                tabPanel(
+                  title = "All V genes",
+                  value = "allV",
+                  actionButton(inputId = "allVgenes", label = "Combine all V calls")
+                )
+              ),
+            ),
+            column(
+              width = 2, 
+              # this doesn't need to be a tabset panel but it does then match with the V selection
+              tabsetPanel(
+                id = "drf", 
+                tabPanel(
+                  title = "D reading frame",
+                  br(),
+                  fluidRow(
+                    column(width = 10, offset = 1,
+                      shinyWidgets::awesomeRadio(
+                        inputId="drf_selector", 
+                        label = NULL, 
+                        choices = c("All", 1:3),
+                        selected = "All"
+                      )
+                    )  
+                  )
+                )
               )
             ),
-            tabPanel(
-              title = "All V genes",
-              value = "allV",
-              actionButton(inputId = "allVgenes", label = "Combine all V calls")
+            column(
+              width = 2,   
+              tabsetPanel(
+                id = "cdr3_length", 
+                tabPanel(
+                  title = "CDR3 length",
+                  br(),
+                  verticalLayout(
+                    fluidRow(
+                      column(width = 10, offset = 1,
+                        shinyWidgets::awesomeRadio(
+                         inputId="cdr3_selector", 
+                         label = NULL, 
+                         choices = c("All", "Custom"),
+                         selected = "All"
+                        )
+                      )
+                    ),
+                    conditionalPanel(
+                      condition = "input.cdr3_selector == 'Custom'",
+                      shinyWidgets::chooseSliderSkin("Modern"),
+                      sliderInput(
+                        inputId = "cdr3_length",
+                        label = NULL, 
+                        min = 9,
+                        max = 15, 
+                        value = 12
+                      )
+                    )
+                  )
+                )
+              )
             )
           )
         )
@@ -161,7 +219,7 @@ server <- function(input, output, session) {
     if(!isTruthy(ds1()) | !isTruthy(ds2())) {
       msg <- p(class="info_text", style="text-align:center;", dataset_msg())
     } else {
-      msg <- p(span(class="info_text", style="float:right;", dataset_msg(), actionButton("change_datasets", "Change")))
+      msg <- p(span(class="info_text", style="float:right;", dataset_msg(), br(), actionButton("change_datasets", "Change")))
     }
     msg
   }) |>
