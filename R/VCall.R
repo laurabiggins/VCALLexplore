@@ -76,13 +76,13 @@ VCall <- R6::R6Class("VCall",
       # Second - filter by DRF
       if(!is.null(drf)){
           filtJ <- dplyr::filter(filtJ, DRF==drf) %>%
-            drop_na(DRF)
+            tidyr::drop_na(DRF)
       } else {
         # remove the drf column and 
       } 
       if(!is.null(CDR3_length)){
         filtJ <- dplyr::filter(filtJ, CDR3_LENGTH==CDR3_length) %>%
-          drop_na(CDR3_LENGTH)
+          tidyr::drop_na(CDR3_LENGTH)
       }  
       filtJ
     },

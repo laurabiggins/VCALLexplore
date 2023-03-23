@@ -63,6 +63,7 @@ ui <- fluidPage(
             )
           )
         ),
+        ## filters ----
         tabPanelBody(
           "v_selector_panel",
           fluidRow(
@@ -103,7 +104,9 @@ ui <- fluidPage(
                 tabPanel(
                   title = "All V genes",
                   value = "allV",
-                  actionButton(inputId = "allVgenes", label = "Combine all V calls")
+                  # this should just work without a button
+                  h2("Using all V genes", id="all_Vgenes_msg")
+                  #actionButton(inputId = "allVgenes", label = "Combine all V calls")
                 )
               ),
             ),
@@ -131,7 +134,7 @@ ui <- fluidPage(
             column(
               width = 2,   
               tabsetPanel(
-                id = "cdr3_length", 
+                id = "cdr3_length_tab", 
                 tabPanel(
                   title = "CDR3 length",
                   br(),
@@ -164,6 +167,7 @@ ui <- fluidPage(
           )
         )
       ),
+      br(),
       br(),
       ## main plots ----
       div(
@@ -370,15 +374,27 @@ server <- function(input, output, session) {
   ## V selection ----
   chosenVlist <- reactive({
 
+    vlist <- NULL
+    
     if(vtype() == "vgroup"){
       if(isTruthy(selectedVgroup())){
-        list(vgroup = selectedVgroup(), v_call = NULL)
+        vlist <- list(vgroup = selectedVgroup(), v_call = NULL)
       }
     } else if(vtype() == "vgene"){
       if(isTruthy(selectedV())){
-        list(vgroup = NULL, v_call = selectedV())
+        vlist <- list(vgroup = NULL, v_call = selectedV())
       }
     }
+    if(input$drf_selector != "All") {
+      vlist[["drf"]] = input$drf_selector
+    } else vlist[["drf"]] = NULL
+    
+    if(input$cdr3_selector == "Custom"){
+      vlist[["CDR3_length"]] = input$cdr3_length
+    } else vlist[["CDR3_length"]] = NULL
+   
+    vlist
+     
   })
   
   chosenV <- reactive(Filter(Negate(is.null), chosenVlist())[[1]])
