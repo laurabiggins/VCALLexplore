@@ -26,7 +26,7 @@ mod_letterplotUI <- function(id){#}, plot_height=400){
   )
 }
 
-mod_letterplotServer <- function(id, ds, raw_colours, selected_V, ds1_name, ds2_name) {
+mod_letterplotServer <- function(id, ds, raw_colours, ds1_name, ds2_name) {
   moduleServer(id, function(input, output, session) {
     
     ns_server <- NS(id)
@@ -53,8 +53,8 @@ mod_letterplotServer <- function(id, ds, raw_colours, selected_V, ds1_name, ds2_
     
     description <- reactive({
       switch(y_type(), 
-             percent_diff_vcall = paste0(ds1_text(), " - ", ds2_text(), " for ", selected_V()),
-             fold_change_vcall = paste0(ds1_text(), "/",  ds2_text(), " for ", selected_V()),
+             percent_diff_vcall = paste0(ds1_text(), " - ", ds2_text(), " for selected V gene(s)"),
+             fold_change_vcall = paste0(ds1_text(), "/",  ds2_text(), " for selected V gene(s)"),
              fold_change_ds = paste0(ds1_text(), "/",  ds2_text(), " over whole dataset."), 
              percent_diff_ds = paste0(ds1_text(), " - ", ds2_text(), " over whole dataset.")
              )

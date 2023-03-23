@@ -372,6 +372,8 @@ server <- function(input, output, session) {
   })
   
   ## V selection ----
+  ## # this might be better with observeEvent and reactive Values bu I'm not sure 
+  ## that it matters too much.
   chosenVlist <- reactive({
 
     vlist <- NULL
@@ -398,6 +400,36 @@ server <- function(input, output, session) {
   })
   
   chosenV <- reactive(Filter(Negate(is.null), chosenVlist())[[1]])
+  
+  ## filter annotations ----
+  
+  v_text <- reactive({
+    v <- "all V genes"
+    if (! is.null(chosenVlist()$vgene)) {
+      v <- chosenVlist()$vgene
+    } else if (! is.null(chosenVlist()$vgroup)) {
+      v <- chosenVlist()$vgroup
+    }
+    v  
+  })
+  
+  drf_text <- reactive({
+    dplyr::if_else(
+      is.null(chosenVlist()$drf), 
+      "all D reading frames",
+      paste("D reading frame", chosenVlist()$drf)
+    )
+  })
+  
+  cdr3_text <- reactive({
+    dplyr::if_else(
+      is.null(chosenVlist()$CDR3_length), 
+      "all CDR3 lengths",
+      paste("CDR3 lengths of ", chosenVlist()$CDR3_length)
+    )
+  })
+  
+  filter_text <- reactive(paste(v_text(), "for", drf_text(), "and", cdr3_text()))
   
   ### Jcalls ----  
   # keep these separate as one dataset may change while the other stays the same.
@@ -478,22 +510,22 @@ server <- function(input, output, session) {
   ## Plots ----
   
   ### AA lengths ----
-  mod_densityplotServer("aa_length_plot", ds=aa_lengths, feature="n_aa", feature_formatted="CDR3 lengths", selected_V=selectedV,  colour_palette=colour_palette)
+  mod_densityplotServer("aa_length_plot", ds=aa_lengths, feature="n_aa", feature_formatted="CDR3 lengths", filter_text=filter_text,  colour_palette=colour_palette)
   
   ### Dcalls ----
-  mod_barplotServer("Dbarplot", ds=Dcalls, feature="singleD", feature_formatted="D call", selected_V=selectedV, colour_palette=colour_palette)
+  mod_barplotServer("Dbarplot", ds=Dcalls, feature="singleD", feature_formatted="D call", filter_text=filter_text, colour_palette=colour_palette)
   
   ### Jcalls ----
-  mod_barplotServer("Jbarplot", ds=Jcalls, feature="J_CALL", feature_formatted="J call", selected_V=chosenV, colour_palette=colour_palette)
+  mod_barplotServer("Jbarplot", ds=Jcalls, feature="J_CALL", feature_formatted="J call", filter_text=filter_text, colour_palette=colour_palette)
   
   ### NP1 lengths ----
-  mod_densityplotServer("np1plot", ds=np1_lengths, feature="NP1_LENGTH", feature_formatted="NP1 lengths", selected_V=selectedV, colour_palette=colour_palette)
+  mod_densityplotServer("np1plot", ds=np1_lengths, feature="NP1_LENGTH", feature_formatted="NP1 lengths", filter_text=filter_text, colour_palette=colour_palette)
   
   ### NP2 lengths ----
-  mod_densityplotServer("np2plot", ds=np2_lengths, feature="NP2_LENGTH",  feature_formatted="NP2 lengths", selected_V=selectedV, colour_palette=colour_palette)
+  mod_densityplotServer("np2plot", ds=np2_lengths, feature="NP2_LENGTH",  feature_formatted="NP2 lengths", filter_text=filter_text, colour_palette=colour_palette)
   
   ### AA as letters  ----
-  mod_letterplotServer("AA_plot", ds=aa_joined_data, raw_colours=extra_hex_cols, selected_V=selectedV, ds1_name=reactive(ds1()$name), ds2_name=reactive(ds2()$name))
+  mod_letterplotServer("AA_plot", ds=aa_joined_data, raw_colours=extra_hex_cols, ds1_name=reactive(ds1()$name), ds2_name=reactive(ds2()$name))
 }  
 
 

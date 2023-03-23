@@ -13,7 +13,7 @@ mod_densityplotUI <- function(id, plot_height=400){
   )
 }
 
-mod_densityplotServer <- function(id, ds, feature, colour_palette, feature_formatted, selected_V) {
+mod_densityplotServer <- function(id, ds, feature, colour_palette, feature_formatted, filter_text) {
   moduleServer(id, function(input, output, session) {
     
     ns_server <- NS(id)
@@ -21,7 +21,7 @@ mod_densityplotServer <- function(id, ds, feature, colour_palette, feature_forma
     observeEvent(input$browser, browser())
     
     plot_title <- reactive({
-      paste("Distribution of", feature_formatted, "for", selected_V())
+      paste("Distribution of", feature_formatted, "for", filter_text())
     })
     
     density_obj <- reactive({

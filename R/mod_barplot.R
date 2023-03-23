@@ -30,7 +30,7 @@ mod_barplotUI <- function(id){#}, plot_height=400){
   )
 }
 
-mod_barplotServer <- function(id, ds, feature, colour_palette, feature_formatted, selected_V) {
+mod_barplotServer <- function(id, ds, feature, colour_palette, feature_formatted, filter_text) {
   moduleServer(id, function(input, output, session) {
     
     ns_server <- NS(id)
@@ -50,9 +50,9 @@ mod_barplotServer <- function(id, ds, feature, colour_palette, feature_formatted
     plot_title <- reactive({
       y_info <- switch(y_val(), 
                        n = "Counts for each", 
-                       percent_ds = "call count/Total no of that call in entire dataset")
+                       percent_ds = paste(feature_formatted, "count/Total no of that call in entire dataset"))
         
-      text <- paste(y_info, feature_formatted, "for", selected_V(), "filtered as specified above.")
+      text <- paste(y_info, feature_formatted, "for", filter_text())
       
     })
     
