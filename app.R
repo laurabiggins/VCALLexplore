@@ -5,6 +5,7 @@ library(magrittr)
 library(plotly)
 library(DT)
 library(ggplot2)
+source("R/processing_utils.R")
 
 # we need to add another function to the R6 class to have AA counts from the right.
 
@@ -473,12 +474,24 @@ server <- function(input, output, session) {
   ### Dcalls ----  
   Dcalls1 <- reactive({
     req(ds1())
-    ds1()$get_Dcalls(selectedV())
+    #ds1()$get_Dcalls(selectedV())
+    req(chosenVlist())
+    do.call(ds1()$get_Dcalls, chosenVlist()) %>%
+      dplyr::add_count(D_CALL) %>%
+      mutate(percent_ds = (n/ds_Dtotal)*100) %>%
+      select(D_CALL, n, percent_ds) %>%
+      distinct()
   })
   
   Dcalls2 <- reactive({
     req(ds2())
-    ds2()$get_Dcalls(selectedV())
+    req(chosenVlist())
+    do.call(ds2()$get_Dcalls, chosenVlist()) %>%
+      dplyr::add_count(D_CALL) %>%
+      mutate(percent_ds = (n/ds_Dtotal)*100) %>%
+      select(D_CALL, n, percent_ds) %>%
+      distinct()
+    #ds2()$get_Dcalls(selectedV())
   })
   
   # joined Dcalls for using in plot
@@ -513,7 +526,7 @@ server <- function(input, output, session) {
   mod_densityplotServer("aa_length_plot", ds=aa_lengths, feature="n_aa", feature_formatted="CDR3 lengths", filter_text=filter_text,  colour_palette=colour_palette)
   
   ### Dcalls ----
-  mod_barplotServer("Dbarplot", ds=Dcalls, feature="singleD", feature_formatted="D call", filter_text=filter_text, colour_palette=colour_palette)
+  mod_barplotServer("Dbarplot", ds=Dcalls, feature="D_CALL", feature_formatted="D call", filter_text=filter_text, colour_palette=colour_palette)
   
   ### Jcalls ----
   mod_barplotServer("Jbarplot", ds=Jcalls, feature="J_CALL", feature_formatted="J call", filter_text=filter_text, colour_palette=colour_palette)

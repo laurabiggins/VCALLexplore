@@ -36,22 +36,31 @@ add_Vgroup <- function(tbl){
 #     select(Vgroup, V_CALL, J_CALL, DRF, CDR3_LENGTH, n, percent_per_Vgene, percent_per_Vgroup, percent_ds)
 # }
 
+# process_D_calls <- function(dataset){
+#   dataset |>
+#     dplyr::select(V_CALL, D_CALL) |>
+#     tidyr::drop_na(D_CALL) |>
+#     tidyr::separate(D_CALL, into=c("singleD"), sep = ",", extra = "drop") |>
+#     dplyr::count(V_CALL, singleD) |>
+#     dplyr::group_by(V_CALL) |> 
+#     dplyr::mutate(percent_per_Vgene = (n/sum(n))*100) |>
+#     dplyr::ungroup() |>
+#     dplyr::mutate(percent_ds = (n/sum(n))*100)
+# }
+
+
 process_J_calls <- function(dataset){
-  select(dataset, SEQUENCE_ID, Vgroup, V_CALL, J_CALL, DRF, CDR3_LENGTH)  %>%
+  dplyr::select(dataset, SEQUENCE_ID, Vgroup, V_CALL, J_CALL, DRF, CDR3_LENGTH)  %>%
     dplyr::add_count(J_CALL, name = "ds_Jtotal")
 }
 
 process_D_calls <- function(dataset){
   dataset |>
-    dplyr::select(V_CALL, D_CALL) |>
+    dplyr::select(SEQUENCE_ID, Vgroup, V_CALL, D_CALL, DRF, CDR3_LENGTH) |>
     tidyr::drop_na(D_CALL) |>
-    tidyr::separate(D_CALL, into=c("singleD"), sep = ",", extra = "drop") |>
-    dplyr::count(V_CALL, singleD) |>
-    dplyr::group_by(V_CALL) |> 
-    dplyr::mutate(percent_per_Vgene = (n/sum(n))*100) |>
-    dplyr::ungroup() |>
-    dplyr::mutate(percent_ds = (n/sum(n))*100)
+    dplyr::add_count(D_CALL, name = "ds_Dtotal")
 }
+
 
 process_V_calls <- function(dataset){
   dataset |>
@@ -131,3 +140,44 @@ parsing_wrapper <- function(dataset, dataset_name){
     aa_lengths = aa, 
     aa_counts_left = aa_count_left)
 }
+
+# this was in the R6 class but wasn't working so I moved it out. It's very much tied to 
+# the VCall R6 class though, so I'm not sure if it should just be in there, but with slightly different syntax to actually make it work. 
+
+# get_DJcalls = function(vcall_obj, call_type = "J_calls", v_call = NULL, vgroup = NULL, drf = NULL, CDR3_length = NULL) {
+#  # browser()
+#   # First filter by vcall or vgroup if supplied
+#   if (!is.null(v_call)){
+#     if(v_call %in% vcall_obj$J_calls$V_CALL) {
+#       filt <- dplyr::filter(vcall_obj[[call_type]], V_CALL==v_call)
+#     } else {
+#       warning("Couldn't find specified v_call")
+#       return(NULL)  
+#     }
+#   } else if (!is.null(vgroup)){
+#     if(vgroup %in% vcall_obj[[call_type]]$Vgroup) {
+#       filt <- dplyr::filter(vcall_obj[[call_type]], Vgroup==vgroup)
+#     } else {
+#       warning("Couldn't find specified vgroup")
+#       return(NULL)  
+#     }
+#   } else {
+#     filt <- vcall_obj[[call_type]]
+#     #browser()
+#   }
+#   # Second - filter by DRF
+#   if(!is.null(drf)){
+#     filt <- dplyr::filter(filt, DRF==drf) %>%
+#       tidyr::drop_na(DRF)
+#   } else {
+#     # remove the drf column and 
+#   } 
+#   if(!is.null(CDR3_length)){
+#     filt <- dplyr::filter(filt, CDR3_LENGTH==CDR3_length) %>%
+#       tidyr::drop_na(CDR3_LENGTH)
+#   }  
+#   filt
+# }
+
+
+
