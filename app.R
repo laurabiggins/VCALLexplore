@@ -336,12 +336,14 @@ server <- function(input, output, session) {
   #### np1&2 lengths for dataset 1 ----
   np_lengths_ds1 <- reactive({
     req(ds1())
-    ds1()$get_np_lengths(selectedV())
+    req(chosenVlist())
+    do.call(ds1()$get_np_lengths, chosenVlist())
   })
   
   np_lengths_ds2 <- reactive({
     req(ds2())
-    ds2()$get_np_lengths(selectedV())
+    req(chosenVlist())
+    do.call(ds2()$get_np_lengths, chosenVlist())
   })
     
   np1_lengths <- reactive({

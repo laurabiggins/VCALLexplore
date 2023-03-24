@@ -69,19 +69,14 @@ my_ds$get_Jcalls(vgroup = "IGHV13", drf = NULL, CDR3_length = 12) %>%
   
 # I think we need to keep in the ID column so that we don't lose the count info
 
-
+library(tidyverse)
+library(R6)
+source("R/processing_utils.R")
+source("R/VCall.R")
 
 #J <- process_J_calls(x)
 my_ds <- parsing_wrapper(read_delim("D:/temp/Harry_White/BCcurated.csv"), "BC")
 saveRDS(my_ds, file = "data/BC.rds")
 my_ds <- parsing_wrapper(read_delim("D:/temp/Harry_White/T1curated.csv"), "T1")
 saveRDS(my_ds, file = "data/T1.rds")
-
-
-
-
-
-
-
-
 

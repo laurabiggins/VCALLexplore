@@ -27,7 +27,7 @@ mod_densityplotServer <- function(id, ds, feature, colour_palette, feature_forma
     density_obj <- reactive({
       
       ggplot(ds(), aes(.data[[feature]], fill = dataset)) +
-        geom_density(adjust = 3, alpha =0.8, colour = "black", size=1) +
+        geom_density(adjust = 3, alpha =0.8, colour = "black", linewidth=1) +
         colour_palette +
         theme_minimal() +
         theme(plot.title = element_text(size=10)) +

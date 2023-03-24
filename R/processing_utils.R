@@ -79,7 +79,8 @@ process_V_groups <- function(dataset){
 
 
 process_np_lengths <- function(dataset){
-  dplyr::select(dataset, V_CALL, NP1_LENGTH, NP2_LENGTH)
+  #dplyr::select(dataset, V_CALL, NP1_LENGTH, NP2_LENGTH)
+  dplyr::select(dataset, SEQUENCE_ID, Vgroup, V_CALL, DRF, CDR3_LENGTH, NP1_LENGTH, NP2_LENGTH) 
 }
 
 # tibble that contains a column called CDR3_IGBLAST_AA (or similar) that contains all the aa sequences

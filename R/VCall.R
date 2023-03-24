@@ -51,7 +51,7 @@ VCall <- R6::R6Class("VCall",
     # then select cdr3 length
     # I don't know if this will get too unwieldy, we'll see I guess.
     # can probably make these functions generic if they're going to be the same for D and J etc.
-    get_DJcalls = function(call_type = "J_calls", v_call = NULL, vgroup = NULL, drf = NULL, CDR3_length = NULL) {
+    get_filtered = function(call_type = "J_calls", v_call = NULL, vgroup = NULL, drf = NULL, CDR3_length = NULL) {
       #browser()
       # First filter by vcall or vgroup if supplied
       if (!is.null(v_call)){
@@ -87,11 +87,11 @@ VCall <- R6::R6Class("VCall",
     },
     
     get_Jcalls = function(v_call = NULL, vgroup = NULL, drf = NULL, CDR3_length = NULL) {
-      self$get_DJcalls(call_type = "J_calls", v_call=v_call, vgroup=vgroup, drf=drf, CDR3_length=CDR3_length)
+      self$get_filtered(call_type = "J_calls", v_call=v_call, vgroup=vgroup, drf=drf, CDR3_length=CDR3_length)
     },
     
     get_Dcalls = function(v_call = NULL, vgroup = NULL, drf = NULL, CDR3_length = NULL) {
-      self$get_DJcalls(call_type = "D_calls", v_call=v_call, vgroup=vgroup, drf=drf, CDR3_length=CDR3_length)
+      self$get_filtered(call_type = "D_calls", v_call=v_call, vgroup=vgroup, drf=drf, CDR3_length=CDR3_length)
     },
 
     # get_Dcalls = function(v_call) {
@@ -100,11 +100,16 @@ VCall <- R6::R6Class("VCall",
     #   }
     # },
     
-    get_np_lengths= function(v_call) {
-      if(v_call %in% self$np_lengths$V_CALL) {
-        dplyr::filter(self$np_lengths, V_CALL==v_call)
-      }
+    # get_np_lengths= function(v_call) {
+    #   if(v_call %in% self$np_lengths$V_CALL) {
+    #     dplyr::filter(self$np_lengths, V_CALL==v_call)
+    #   }
+    # },
+    
+    get_np_lengths = function(v_call = NULL, vgroup = NULL, drf = NULL, CDR3_length = NULL) {
+      self$get_filtered(call_type = "np_lengths", v_call=v_call, vgroup=vgroup, drf=drf, CDR3_length=CDR3_length)
     },
+    
     
     get_aa_lengths= function(v_call) {
       if(v_call %in% self$aa_lengths$V_CALL) {
