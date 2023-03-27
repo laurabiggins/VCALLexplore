@@ -80,3 +80,38 @@ saveRDS(my_ds, file = "data/BC.rds")
 my_ds <- parsing_wrapper(read_delim("D:/temp/Harry_White/T1curated.csv"), "T1")
 saveRDS(my_ds, file = "data/T1.rds")
 
+
+
+x <- read_delim("D:/temp/Harry_White/BCcurated.csv") %>%
+  add_Vgroup()
+
+x1 <- process_individual_aa_left(x)
+
+
+
+
+# this is the onoe that we're actually using
+process_individual_aa_left <- function(dataset, cdr3_col = "CDR3_IGBLAST_AA") {
+  dataset |>
+    dplyr::select(V_CALL, {cdr3_col}) |>
+    dplyr::rename(AA = {cdr3_col}) |>
+    dplyr::mutate(n_aa = nchar(AA)) |>
+    dplyr::relocate(n_aa, .before=AA) |>
+    dplyr::filter(nchar(AA) <= 22 & nchar(AA) >=9) |>
+    tidyr::separate(AA, sep = 1:21, into = as.character(1:22), fill = "right", remove = FALSE) |>
+    tidyr::pivot_longer(-(V_CALL:AA), names_to = "pos") |>
+    dplyr::filter(value != "") |>
+    dplyr::mutate(pos = forcats::as_factor(pos)) |>
+    dplyr::add_count(V_CALL, pos, value, name = "aa_count") |>
+    dplyr::add_count(V_CALL, pos, name = "pos_total") |>
+    dplyr::add_count(pos, name="ds_pos_total") |>
+    dplyr::mutate(aa_percent = (aa_count/pos_total)*100) |>
+    dplyr::mutate(aa_ds_percent = (aa_count/ds_pos_total)*100) |>
+    dplyr::select(-AA, -n_aa, -pos_total, -ds_pos_total) |>
+    dplyr::distinct()
+}
+
+
+
+
+

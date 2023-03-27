@@ -184,8 +184,8 @@ ui <- fluidPage(
             column(width = 4, mod_densityplotUI(id="aa_length_plot", plot_height=250))
           )
         ),
-        box_wrapper(box_id="AAplotbox", box_width = 12, box_title="AA", mod_letterplotUI(id="AA_plot")),
-        actionButton("browser", "browser")
+        box_wrapper(box_id="AAplotbox", box_width = 12, box_title="AA", mod_letterplotUI(id="AA_plot"))#,
+        #actionButton("browser", "browser")
       )
     )
   )
@@ -322,14 +322,24 @@ server <- function(input, output, session) {
     
     req(ds1(), ds2())
     
-    dataset1_aa <- ds1()$get_aa_lengths(selectedV()) |>
-      dplyr::select(n_aa) |>
+    dataset1_aa <- do.call(ds1()$get_aa_lengths, chosenVlist()) |>
+      dplyr::select(CDR3_LENGTH) |>
       tibble::add_column(dataset = ds1()$name)
     
-    ds2()$get_aa_lengths(selectedV()) |>
-      dplyr::select(n_aa) |>
+    do.call(ds2()$get_aa_lengths, chosenVlist()) |>
+      dplyr::select(CDR3_LENGTH) |>
       tibble::add_column(dataset = ds2()$name) |>
       dplyr::bind_rows(dataset1_aa)
+    
+    
+    # dataset1_aa <- ds1()$get_aa_lengths(selectedV()) |>
+    #   dplyr::select(n_aa) |>
+    #   tibble::add_column(dataset = ds1()$name)
+    
+    # ds2()$get_aa_lengths(selectedV()) |>
+    #   dplyr::select(n_aa) |>
+    #   tibble::add_column(dataset = ds2()$name) |>
+    #   dplyr::bind_rows(dataset1_aa)
   })
   
   ### np lengths ----
@@ -509,23 +519,34 @@ server <- function(input, output, session) {
       dplyr::bind_rows(D2)
   })
   
+  aa1 <- reactive({
+    do.call(ds1()$get_aa_left , chosenVlist()) 
+      
+  })
+  
+  aa2 <- reactive({
+    do.call(ds2()$get_aa_left, chosenVlist())
+  })
+  
+  # need to work out what we actually want to show here
+  
   ### AA positions ----
   #### all joined data ----
-  joined <- reactive({
-    dplyr::full_join(ds1()$aa_counts_left, ds2()$aa_counts_left, by = c("V_CALL", "pos", "value")) |>
-    tidy_aa_joined_data()
-  }) |>
-    bindCache(input$dataset1_selector, input$dataset2_selector) |>
-    bindEvent(input$load_datasets)
+  # joined <- reactive({
+  #   dplyr::full_join(ds1()$aa_counts_left, ds2()$aa_counts_left, by = c("V_CALL", "pos", "value")) |>
+  #   tidy_aa_joined_data()
+  # }) |>
+  #   bindCache(input$dataset1_selector, input$dataset2_selector) |>
+  #   bindEvent(input$load_datasets)
   
  
   #### filtered by VCALL ----
-  aa_joined_data <- reactive(dplyr::filter(joined(), V_CALL==input$vcall_selector))
+  #aa_joined_data <- reactive(dplyr::filter(joined(), V_CALL==input$vcall_selector))
   
   ## Plots ----
   
   ### AA lengths ----
-  mod_densityplotServer("aa_length_plot", ds=aa_lengths, feature="n_aa", feature_formatted="CDR3 lengths", filter_text=filter_text,  colour_palette=colour_palette)
+  mod_densityplotServer("aa_length_plot", ds=aa_lengths, feature="CDR3_LENGTH", feature_formatted="CDR3 lengths", filter_text=filter_text,  colour_palette=colour_palette)
   
   ### Dcalls ----
   mod_barplotServer("Dbarplot", ds=Dcalls, feature="D_CALL", feature_formatted="D call", filter_text=filter_text, colour_palette=colour_palette)
@@ -540,7 +561,7 @@ server <- function(input, output, session) {
   mod_densityplotServer("np2plot", ds=np2_lengths, feature="NP2_LENGTH",  feature_formatted="NP2 lengths", filter_text=filter_text, colour_palette=colour_palette)
   
   ### AA as letters  ----
-  mod_letterplotServer("AA_plot", ds=aa_joined_data, raw_colours=extra_hex_cols, ds1_name=reactive(ds1()$name), ds2_name=reactive(ds2()$name))
+ # mod_letterplotServer("AA_plot", ds=aa_joined_data, raw_colours=extra_hex_cols, ds1_name=reactive(ds1()$name), ds2_name=reactive(ds2()$name))
 }  
 
 
