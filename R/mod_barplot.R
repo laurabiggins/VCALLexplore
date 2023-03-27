@@ -25,8 +25,8 @@ mod_barplotUI <- function(id){#}, plot_height=400){
         )
       )
     ),
-    br(),
-    actionButton(ns("browser"), "browser")
+    br()#,
+    #actionButton(ns("browser"), "browser")
   )
 }
 
