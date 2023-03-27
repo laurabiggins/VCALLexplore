@@ -418,8 +418,8 @@ server <- function(input, output, session) {
   
   v_text <- reactive({
     v <- "all V genes"
-    if (! is.null(chosenVlist()$vgene)) {
-      v <- chosenVlist()$vgene
+    if (! is.null(chosenVlist()$v_call)) {
+      v <- chosenVlist()$v_call
     } else if (! is.null(chosenVlist()$vgroup)) {
       v <- chosenVlist()$vgroup
     }
