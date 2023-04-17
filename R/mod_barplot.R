@@ -48,12 +48,10 @@ mod_barplotServer <- function(id, ds, feature, colour_palette, feature_formatted
     #y_val <- reactive(dplyr::if_else(input$yaxis == "count", "n", "percentage"))
     
     plot_title <- reactive({
-      y_info <- switch(y_val(), 
-                       n = "Counts for each", 
-                       percent_ds = paste(feature_formatted, "count/Total no of that call in entire dataset"))
-        
-      text <- paste(y_info, feature_formatted, "for", filter_text())
-      
+      switch(y_val(), 
+         n = paste("Counts for each", feature_formatted, "for", filter_text()), 
+         percent_ds = paste0(feature_formatted, " count for ", filter_text(), " as percentage of total ", feature_formatted, "s in dataset."))
+
     })
     
     barplot_base <- reactive({
