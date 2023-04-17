@@ -17,10 +17,3 @@ saveRDS(my_ds, file = "data/FO.rds")
 
 my_ds <- parsing_wrapper(read_delim("D:/temp/Harry_White/MZcurated.csv"), "MZ")
 saveRDS(my_ds, file = "data/MZ.rds")
-
-
-
-
-
-
-

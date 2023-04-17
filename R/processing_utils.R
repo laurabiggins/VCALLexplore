@@ -20,15 +20,18 @@ add_Vgroup <- function(tbl){
 # }
 
 process_J_calls <- function(dataset){
-  dplyr::select(dataset, SEQUENCE_ID, Vgroup, V_CALL, J_CALL, DRF, CDR3_LENGTH)  %>%
-    dplyr::add_count(J_CALL, name = "ds_Jtotal")
+  J <- dplyr::select(dataset, SEQUENCE_ID, Vgroup, V_CALL, J_CALL, DRF, CDR3_LENGTH)  %>%
+    tidyr::drop_na(J_CALL) 
+  
+  tibble::add_column(J, ds_Jtotal = nrow(J))
 }
 
 process_D_calls <- function(dataset){
-  dataset |>
+  D <- dataset |>
     dplyr::select(SEQUENCE_ID, Vgroup, V_CALL, D_CALL, DRF, CDR3_LENGTH) |>
-    tidyr::drop_na(D_CALL) |>
-    dplyr::add_count(D_CALL, name = "ds_Dtotal")
+    tidyr::drop_na(D_CALL)
+ 
+  tibble::add_column(D, ds_Dtotal = nrow(D))
 }
 
 process_V_calls <- function(dataset){
