@@ -94,18 +94,6 @@ VCall <- R6::R6Class("VCall",
       self$get_filtered(call_type = "D_calls", v_call=v_call, vgroup=vgroup, drf=drf, CDR3_length=CDR3_length)
     },
 
-    # get_Dcalls = function(v_call) {
-    #   if(v_call %in% self$D_calls$V_CALL) {
-    #     dplyr::filter(self$D_calls, V_CALL==v_call)
-    #   }
-    # },
-    
-    # get_np_lengths= function(v_call) {
-    #   if(v_call %in% self$np_lengths$V_CALL) {
-    #     dplyr::filter(self$np_lengths, V_CALL==v_call)
-    #   }
-    # },
-    
     get_np_lengths = function(v_call = NULL, vgroup = NULL, drf = NULL, CDR3_length = NULL) {
       self$get_filtered(call_type = "np_lengths", v_call=v_call, vgroup=vgroup, drf=drf, CDR3_length=CDR3_length)
     },
@@ -114,20 +102,15 @@ VCall <- R6::R6Class("VCall",
       self$get_filtered(call_type = "aa_lengths", v_call=v_call, vgroup=vgroup, drf=drf, CDR3_length=CDR3_length)
     },
     
-    # get_aa_lengths= function(v_call) {
-    #   if(v_call %in% self$aa_lengths$V_CALL) {
-    #     dplyr::filter(self$aa_lengths, V_CALL==v_call)
-    #   }
-    # },
-  
     get_aa_left = function(v_call = NULL, vgroup = NULL, drf = NULL, CDR3_length = NULL) {
       self$get_filtered(call_type = "aa_counts_left", v_call=v_call, vgroup=vgroup, drf=drf, CDR3_length=CDR3_length)
     },
       
-    get_aa_counts_left = function(v_call) {
-      if(v_call %in% self$aa_counts_left$V_CALL) {
-        dplyr::filter(self$aa_counts_left, V_CALL==v_call)
-      }
-    }
+    # get_aa_counts_left = function(v_call = NULL, vgroup = NULL, drf = NULL, CDR3_length = NULL) {
+    #   self$get_filtered(call_type = "aa_counts_left", v_call=v_call, vgroup=vgroup, drf=drf, CDR3_length=CDR3_length)
+    #   #if(v_call %in% self$aa_counts_left$V_CALL) {
+    #   #  dplyr::filter(self$aa_counts_left, V_CALL==v_call)
+    #  # }
+    # }
   
 ))
