@@ -104,7 +104,7 @@ VCall <- R6::R6Class("VCall",
     
     get_aa_left = function(v_call = NULL, vgroup = NULL, drf = NULL, CDR3_length = NULL) {
       self$get_filtered(call_type = "aa_counts_left", v_call=v_call, vgroup=vgroup, drf=drf, CDR3_length=CDR3_length)
-    },
+    }#,
       
     # get_aa_counts_left = function(v_call = NULL, vgroup = NULL, drf = NULL, CDR3_length = NULL) {
     #   self$get_filtered(call_type = "aa_counts_left", v_call=v_call, vgroup=vgroup, drf=drf, CDR3_length=CDR3_length)
