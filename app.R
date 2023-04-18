@@ -260,38 +260,51 @@ server <- function(input, output, session) {
       )
       dataset_msg(paste0("Datasets loaded: ", ds1()$name, ", ", ds2()$name))
       updateTabsetPanel(session, "control_panel", selected = "v_selector_panel")
+      shinyjs::show("main_plots")
     }
   }) 
+
+  ### valid selection check ----
+  # selected V or all genes or group
+  validSelection <- reactive({
+    
+    if (vtype() == "allV") {
+      return(TRUE)
+    } else if (vtype() == "vgroup"){
+        if (isTruthy(selectedVgroup())) {
+          return(TRUE)
+        } else {
+          return(FALSE) 
+        }
+    } else if (vtype() == "vgene") {
+        if (isTruthy(selectedV())) {
+          return(TRUE)
+        } else {
+          return(FALSE) 
+        }
+    }
+  })
   
   ### select VCALL ----
   observeEvent(selectedV(), {
     if(isTruthy(selectedV())) {
       shinyjs::show("next_Vgene")
-     # shinyjs::show("main_plots")
-    }
-    else {
-      shinyjs::hide("next_Vgene")
-     # shinyjs::hide("main_plots")
-    }
-  })
-  
-  observeEvent(chosenV(), {
-    if(isTruthy(chosenV())) {
-       shinyjs::show("main_plots")
-    }
-    else {
-      shinyjs::hide("main_plots")
-    }
-  })
-  
-  observeEvent(selectedVgroup(), {
-    if(isTruthy(selectedVgroup())) {
-      shinyjs::show("next_Vgroup")
       #shinyjs::show("main_plots")
     }
     else {
-      shinyjs::hide("next_Vgroup")
+      shinyjs::hide("next_Vgene")
       #shinyjs::hide("main_plots")
+    }
+  })
+
+  observeEvent(selectedVgroup(), {
+    if(isTruthy(selectedVgroup())) {
+      shinyjs::show("next_Vgroup")
+     # shinyjs::show("main_plots")
+    }
+    else {
+      shinyjs::hide("next_Vgroup")
+     # shinyjs::hide("main_plots")
     }
   })
   
@@ -310,17 +323,14 @@ server <- function(input, output, session) {
       inputId="vgroup_selector", selected = allVgroups()[current_index+1] 
     )
   })
-  
-  
-  
-  
-  
+
   ## Reactive data for plots ----
   
   ### aa lengths ----
   aa_lengths <- reactive({
     
     req(ds1(), ds2())
+    req(validSelection())
     
     dataset1_aa <- do.call(ds1()$get_aa_lengths, chosenVlist()) |>
       dplyr::select(CDR3_LENGTH) |>
@@ -346,13 +356,15 @@ server <- function(input, output, session) {
   #### np1&2 lengths for dataset 1 ----
   np_lengths_ds1 <- reactive({
     req(ds1())
-    req(chosenVlist())
+    req(validSelection())
+    
     do.call(ds1()$get_np_lengths, chosenVlist())
   })
   
   np_lengths_ds2 <- reactive({
     req(ds2())
-    req(chosenVlist())
+    req(validSelection())
+    
     do.call(ds2()$get_np_lengths, chosenVlist())
   })
     
@@ -389,8 +401,6 @@ server <- function(input, output, session) {
   ## that it matters too much.
   chosenVlist <- reactive({
 
-    vlist <- NULL
-    
     if(vtype() == "vgroup"){
       if(isTruthy(selectedVgroup())){
         vlist <- list(vgroup = selectedVgroup(), v_call = NULL)
@@ -399,6 +409,8 @@ server <- function(input, output, session) {
       if(isTruthy(selectedV())){
         vlist <- list(vgroup = NULL, v_call = selectedV())
       }
+    } else{
+      vlist <- list(vgroup = NULL, v_call = NULL)
     }
     if(input$drf_selector != "All") {
       vlist[["drf"]] = input$drf_selector
@@ -412,7 +424,7 @@ server <- function(input, output, session) {
      
   })
   
-  chosenV <- reactive(Filter(Negate(is.null), chosenVlist())[[1]])
+  #chosenV <- reactive(Filter(Negate(is.null), chosenVlist())[[1]])
   
   ## filter annotations ----
   
@@ -446,11 +458,11 @@ server <- function(input, output, session) {
   
   ### Jcalls ----  
   # keep these separate as one dataset may change while the other stays the same.
-  # TODO: I don't think the %age dataset is right - check what it's doing.
   Jcalls1 <- reactive({
     
     req(ds1())
-    req(chosenVlist())
+    req(validSelection())
+    
     do.call(ds1()$get_Jcalls, chosenVlist()) %>%
       dplyr::add_count(J_CALL) %>%
       mutate(percent_ds = (n/ds_Jtotal)*100) %>%
@@ -461,7 +473,8 @@ server <- function(input, output, session) {
   Jcalls2 <- reactive({
     
     req(ds2())
-    req(chosenVlist())
+    req(validSelection())
+    
     do.call(ds2()$get_Jcalls, chosenVlist()) %>%
       dplyr::add_count(J_CALL) %>%
       mutate(percent_ds = (n/ds_Jtotal)*100) %>%
@@ -486,8 +499,8 @@ server <- function(input, output, session) {
   ### Dcalls ----  
   Dcalls1 <- reactive({
     req(ds1())
-    #ds1()$get_Dcalls(selectedV())
-    req(chosenVlist())
+    req(validSelection())
+    
     do.call(ds1()$get_Dcalls, chosenVlist()) %>%
       dplyr::add_count(D_CALL) %>%
       mutate(percent_ds = (n/ds_Dtotal)*100) %>%
@@ -497,7 +510,8 @@ server <- function(input, output, session) {
   
   Dcalls2 <- reactive({
     req(ds2())
-    req(chosenVlist())
+    req(validSelection())
+    
     do.call(ds2()$get_Dcalls, chosenVlist()) %>%
       dplyr::add_count(D_CALL) %>%
       mutate(percent_ds = (n/ds_Dtotal)*100) %>%
@@ -520,11 +534,13 @@ server <- function(input, output, session) {
   })
   
   aa1 <- reactive({
+    req(validSelection())
     do.call(ds1()$get_aa_left , chosenVlist()) 
       
   })
   
   aa2 <- reactive({
+    req(validSelection())
     do.call(ds2()$get_aa_left, chosenVlist())
   })
   
