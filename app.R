@@ -543,8 +543,12 @@ server <- function(input, output, session) {
     req(validSelection())
     do.call(ds2()$get_aa_left, chosenVlist())
   })
+
+  # aa_pos <- reactive({
+  #   req(aa1(), aa2())
+  #   
+  # })
   
-  # need to work out what we actually want to show here
   
   ### AA positions ----
   #### all joined data ----
