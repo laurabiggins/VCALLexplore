@@ -20,9 +20,9 @@ mod_letterplotUI <- function(id){#}, plot_height=400){
           radioButtons(ns("yaxis2"), label=NULL, choices = c("within VCall" = "within_vcall", "whole dataset" = "whole_dataset"), inline = TRUE)
         )
       )
-    )#,
+    ),
     ##br(),
-    #actionButton(ns("browser"), "browser")
+    actionButton(ns("browser"), "browser")
   )
 }
 
@@ -60,12 +60,13 @@ mod_letterplotServer <- function(id, ds, raw_colours, ds1_name, ds2_name) {
              )
     })
     
-    output$plot_description <- renderText(description())
+   # output$plot_description <- renderText(description())
     
     output$letterplot <- renderPlotly({
       
       ds() |>
-        plotly::plot_ly(x= ~pos, y= ~get(y_type()), color= ~value, colors = raw_colours) |>
+        #plotly::plot_ly(x= ~pos, y= ~get(y_type()), color= ~value, colors = raw_colours) |>
+        plotly::plot_ly(x= ~pos, y= ~pos_aa_count, color= ~value, colors = raw_colours) |>
         plotly::add_text(
           text = ~value,
           #hovertext = ~name,
@@ -74,13 +75,15 @@ mod_letterplotServer <- function(id, ds, raw_colours, ds1_name, ds2_name) {
         ) %>%
         layout(
           title = list(
-            text = paste("Difference in amino acids frequencies along", selected_V(), "between the 2 datasets"), 
+            #text = paste("Difference in amino acids frequencies along", selected_V(), "between the 2 datasets"),
+            text = "Temporarily just showing counts for dataset 1",
             pad = list(t = 100, b = 200), yanchor = "top"
-          ), 
-          yaxis = list(title = y_type()), 
+          ),
+          #yaxis = list(title = y_type()),
           xaxis = list(title="position")
         )
     })
+    
   })
         
 }

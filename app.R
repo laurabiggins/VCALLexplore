@@ -184,8 +184,8 @@ ui <- fluidPage(
             column(width = 4, mod_densityplotUI(id="aa_length_plot", plot_height=250))
           )
         ),
-        box_wrapper(box_id="AAplotbox", box_width = 12, box_title="AA", mod_letterplotUI(id="AA_plot"))#,
-        #actionButton("browser", "browser")
+        box_wrapper(box_id="AAplotbox", box_width = 12, box_title="AA", mod_letterplotUI(id="AA_plot")),
+        actionButton("browser", "browser")
       )
     )
   )
@@ -400,7 +400,7 @@ server <- function(input, output, session) {
   ## # this might be better with observeEvent and reactive Values bu I'm not sure 
   ## that it matters too much.
   chosenVlist <- reactive({
-
+    
     if(vtype() == "vgroup"){
       if(isTruthy(selectedVgroup())){
         vlist <- list(vgroup = selectedVgroup(), v_call = NULL)
@@ -549,6 +549,12 @@ server <- function(input, output, session) {
   #   
   # })
   
+  aa1_counts <- reactive({
+    aa1() %>%
+      select(pos, value, ds_pos_total) %>%
+      dplyr::add_count(pos, value, name = "pos_aa_count") %>%
+      distinct()
+  })
   
   ### AA positions ----
   #### all joined data ----
@@ -582,6 +588,10 @@ server <- function(input, output, session) {
   
   ### AA as letters  ----
  # mod_letterplotServer("AA_plot", ds=aa_joined_data, raw_colours=extra_hex_cols, ds1_name=reactive(ds1()$name), ds2_name=reactive(ds2()$name))
+ # 
+  ### AA as letters  ----
+  mod_letterplotServer("AA_plot", ds=aa1_counts, raw_colours=extra_hex_cols, ds1_name=reactive(ds1()$name), ds2_name=reactive(ds2()$name))
+  
 }  
 
 
