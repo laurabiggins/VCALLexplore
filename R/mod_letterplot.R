@@ -11,13 +11,13 @@ mod_letterplotUI <- function(id){#}, plot_height=400){
       textOutput(ns("plot_description")),
       br(),
       fluidRow(
+        # column(
+        #   width = 6#, 
+        #   #radioButtons(ns("yaxis1"), label=NULL, inline = TRUE, choices = c("percent difference" = "percent_diff", "fold change" = "fc"))
+        # ),
         column(
           width = 6, 
-          radioButtons(ns("yaxis1"), label=NULL, inline = TRUE, choices = c("percent difference" = "percent_diff", "fold change" = "fc"))
-        ),
-        column(
-          width = 6, 
-          radioButtons(ns("yaxis2"), label=NULL, choices = c("within VCall" = "within_vcall", "whole dataset" = "whole_dataset"), inline = TRUE)
+          radioButtons(ns("yaxis"), label=NULL, choices = c("within selected V" = "within_v", "whole dataset" = "whole_dataset"), inline = TRUE)
         )
       )
     ),
@@ -35,14 +35,10 @@ mod_letterplotServer <- function(id, ds, raw_colours, ds1_name, ds2_name) {
     
     y_type <- reactive({
       
-      if(input$yaxis1 == "percent_diff" & input$yaxis2 == "within_vcall"){
-        return("percent_diff_vcall")
-      } else if(input$yaxis1 == "fc" & input$yaxis2 == "within_vcall"){
-        return("fold_change_vcall")
-      } else if(input$yaxis1 == "fc" & input$yaxis2 == "whole_dataset"){
-        return("fold_change_ds")
-      } else if (input$yaxis1 == "percent_diff" & input$yaxis2 == "whole_dataset"){
-        return("percent_diff_ds")
+      if(input$yaxis == "within_v"){
+        return("diff_withinV")
+      } else if(input$yaxis == "whole_dataset"){
+        return("diff_dataset")
       } else {
         print("Oops, something went wrong with the y axis selection on the letter plot")
       }
@@ -53,10 +49,10 @@ mod_letterplotServer <- function(id, ds, raw_colours, ds1_name, ds2_name) {
     
     description <- reactive({
       switch(y_type(), 
-             percent_diff_vcall = paste0(ds1_text(), " - ", ds2_text(), " for selected V gene(s)"),
-             fold_change_vcall = paste0(ds1_text(), "/",  ds2_text(), " for selected V gene(s)"),
-             fold_change_ds = paste0(ds1_text(), "/",  ds2_text(), " over whole dataset."), 
-             percent_diff_ds = paste0(ds1_text(), " - ", ds2_text(), " over whole dataset.")
+             diff_withinV = paste0(ds1_text(), " - ", ds2_text(), " for selected V gene(s)"),
+             #fold_change_vcall = paste0(ds1_text(), "/",  ds2_text(), " for selected V gene(s)"),
+             #fold_change_ds = paste0(ds1_text(), "/",  ds2_text(), " over whole dataset."), 
+             diff_dataset = paste0(ds1_text(), " - ", ds2_text(), " over whole dataset.")
              )
     })
     
@@ -65,8 +61,8 @@ mod_letterplotServer <- function(id, ds, raw_colours, ds1_name, ds2_name) {
     output$letterplot <- renderPlotly({
       
       ds() |>
-        #plotly::plot_ly(x= ~pos, y= ~get(y_type()), color= ~value, colors = raw_colours) |>
-        plotly::plot_ly(x= ~pos, y= ~pos_aa_count, color= ~value, colors = raw_colours) |>
+        plotly::plot_ly(x= ~pos, y= ~get(y_type()), color= ~value, colors = raw_colours) |>
+        #plotly::plot_ly(x= ~pos, y= ~pos_aa_count, color= ~value, colors = raw_colours) |>
         plotly::add_text(
           text = ~value,
           #hovertext = ~name,
@@ -75,11 +71,11 @@ mod_letterplotServer <- function(id, ds, raw_colours, ds1_name, ds2_name) {
         ) %>%
         layout(
           title = list(
-            #text = paste("Difference in amino acids frequencies along", selected_V(), "between the 2 datasets"),
-            text = "Temporarily just showing counts for dataset 1",
+            text = "Difference in amino acids frequencies along selected V call(s) between the 2 datasets",
+            #text = "Temporarily just showing counts for dataset 1",
             pad = list(t = 100, b = 200), yanchor = "top"
           ),
-          #yaxis = list(title = y_type()),
+          yaxis = list(title = description()),
           xaxis = list(title="position")
         )
     })

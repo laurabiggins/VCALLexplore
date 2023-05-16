@@ -87,7 +87,7 @@ ui <- fluidPage(
                   )
                 ),
                 tabPanel(
-                  title = "V group",
+                  title = "V family",
                   value = "vgroup",
                   br(),
                   fluidRow(
@@ -492,8 +492,8 @@ server <- function(input, output, session) {
     
     Jcalls1() |>
       tibble::add_column(dataset = ds1()$name) |>
-      dplyr::bind_rows(J2)
-
+      dplyr::bind_rows(J2) %>%
+      dplyr::mutate(dataset = forcats::fct(x=dataset, levels=c(ds1()$name, ds2()$name)))
   })
   
   ### Dcalls ----  
@@ -530,7 +530,8 @@ server <- function(input, output, session) {
     
     Dcalls1() |>
       tibble::add_column(dataset = ds1()$name) |>
-      dplyr::bind_rows(D2)
+      dplyr::bind_rows(D2) %>%
+      dplyr::mutate(dataset = forcats::fct(x=dataset, levels=c(ds1()$name, ds2()$name)))
   })
   
   aa1 <- reactive({
@@ -553,15 +554,30 @@ server <- function(input, output, session) {
     aa1() %>%
       select(pos, value, ds_pos_total) %>%
       dplyr::add_count(pos, value, name = "pos_aa_count") %>%
-      distinct()
+      dplyr::add_count(pos, name = "selectedV_total") %>%
+      distinct() %>%
+      dplyr::mutate(percent_within_Vselection = (pos_aa_count/selectedV_total)*100) %>%
+      dplyr::mutate(percent_dataset = (pos_aa_count/ds_pos_total)*100)
+  })
+  
+  aa2_counts <- reactive({
+    aa2() %>%
+      select(pos, value, ds_pos_total) %>%
+      dplyr::add_count(pos, value, name = "pos_aa_count") %>%
+      dplyr::add_count(pos, name = "selectedV_total") %>%
+      distinct() %>%
+      dplyr::mutate(percent_within_Vselection = (pos_aa_count/selectedV_total)*100) %>%
+      dplyr::mutate(percent_dataset = (pos_aa_count/ds_pos_total)*100)
   })
   
   ### AA positions ----
   #### all joined data ----
-  # joined <- reactive({
-  #   dplyr::full_join(ds1()$aa_counts_left, ds2()$aa_counts_left, by = c("V_CALL", "pos", "value")) |>
-  #   tidy_aa_joined_data()
-  # }) |>
+  aa_both <- reactive({
+    dplyr::full_join(aa1_counts(), aa2_counts(), by = c("pos", "value")) %>%
+      dplyr::mutate(diff_withinV = percent_within_Vselection.x - percent_within_Vselection.y) %>%
+      dplyr::mutate(diff_dataset = percent_dataset.x - percent_dataset.y) %>%
+      select(pos, value, diff_withinV, diff_dataset)
+  }) #|>
   #   bindCache(input$dataset1_selector, input$dataset2_selector) |>
   #   bindEvent(input$load_datasets)
   
@@ -590,7 +606,7 @@ server <- function(input, output, session) {
  # mod_letterplotServer("AA_plot", ds=aa_joined_data, raw_colours=extra_hex_cols, ds1_name=reactive(ds1()$name), ds2_name=reactive(ds2()$name))
  # 
   ### AA as letters  ----
-  mod_letterplotServer("AA_plot", ds=aa1_counts, raw_colours=extra_hex_cols, ds1_name=reactive(ds1()$name), ds2_name=reactive(ds2()$name))
+  mod_letterplotServer("AA_plot", ds=aa_both, raw_colours=extra_hex_cols, ds1_name=reactive(ds1()$name), ds2_name=reactive(ds2()$name))
   
 }  
 
