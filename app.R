@@ -184,8 +184,8 @@ ui <- fluidPage(
             column(width = 4, mod_densityplotUI(id="aa_length_plot", plot_height=250))
           )
         ),
-        box_wrapper(box_id="AAplotbox", box_width = 12, box_title="AA", mod_letterplotUI(id="AA_plot")),
-        actionButton("browser", "browser")
+        box_wrapper(box_id="AAplotbox", box_width = 12, box_title="AA", mod_letterplotUI(id="AA_plot"))#,
+       # actionButton("browser", "browser")
       )
     )
   )
