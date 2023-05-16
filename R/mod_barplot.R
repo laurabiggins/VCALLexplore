@@ -24,8 +24,8 @@ mod_barplotUI <- function(id){#}, plot_height=400){
           radioButtons(ns("xaxis"), label=NULL, choices = c("within", "between"), inline = TRUE)
         )
       )
-    ),
-    br()#,
+    )#,
+    #br()#,
     #actionButton(ns("browser"), "browser")
   )
 }
