@@ -39,6 +39,8 @@ saveRDS(my_ds, file = "data/proBnp.rds")
 my_ds <- parsing_wrapper(read_delim("D:/temp/Harry_White/May23/proBoof.csv"), "proBoof")
 saveRDS(my_ds, file = "data/proBoof.rds")
 
+my_ds <- parsing_wrapper(read_delim("data-raw/proBstopif.csv"), "proBstopif")
+saveRDS(my_ds, file = "data/proBstopif.rds")
 
 
 
