@@ -103,6 +103,7 @@ process_individual_aa_left <- function(dataset) {
 
 
 parsing_wrapper <- function(dataset, dataset_name){
+  colnames(dataset) <- toupper(colnames(dataset))
   dataset <- add_Vgroup(dataset)
   J <- process_J_calls(dataset)
   D <- process_D_calls(dataset)
