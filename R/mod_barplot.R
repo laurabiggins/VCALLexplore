@@ -12,35 +12,46 @@ mod_barplotUI <- function(id){#}, plot_height=400){
       fluidRow(
         column(
           width = 6, 
-          radioButtons(ns("yaxis"), label=NULL, inline = TRUE, choices = c("count", "%"))
+          radioButtons(ns("yaxis"), label=NULL, inline = TRUE, 
+                       choices = c("count" = "count", 
+                                   #"% V gene" = "percentV", 
+                                   "% whole dataset" = "percent_ds"
+                                   )
+                       )
         ),
         column(
           width = 6, 
           radioButtons(ns("xaxis"), label=NULL, choices = c("within", "between"), inline = TRUE)
         )
       )
-    ),
-    br()#,
+    )#,
+    #br()#,
     #actionButton(ns("browser"), "browser")
   )
 }
 
-mod_barplotServer <- function(id, ds, feature, colour_palette, feature_formatted, selected_V) {
+mod_barplotServer <- function(id, ds, feature, colour_palette, feature_formatted, filter_text) {
   moduleServer(id, function(input, output, session) {
     
     ns_server <- NS(id)
     
     observeEvent(input$browser, browser())
     
-    y_val <- reactive(dplyr::if_else(input$yaxis == "count", "n", "percentage"))
+    y_val <- reactive({
+      switch(input$yaxis,
+        count = "n", 
+        #percentV = "percent_per_Vgene",
+        percent_ds = "percent_ds"
+      )
+    })
+    
+    #y_val <- reactive(dplyr::if_else(input$yaxis == "count", "n", "percentage"))
     
     plot_title <- reactive({
-      y_info <- switch(y_val(), 
-                       n = "Total counts for each", 
-                       percentage = "Proportion of each")
-        
-      text <- paste(y_info, feature_formatted, "for", selected_V(), "within each dataset")
-      
+      switch(y_val(), 
+         n = paste("Counts for each", feature_formatted, "for", filter_text()), 
+         percent_ds = paste0(feature_formatted, " count for ", filter_text(), " as percentage of total ", feature_formatted, "s in dataset."))
+
     })
     
     barplot_base <- reactive({

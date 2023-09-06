@@ -3,47 +3,59 @@ library(R6)
 source("R/processing_utils.R")
 source("R/VCall.R")
 
-# ds2 <- readr::read_tsv("data-raw/umtboth.txt")
-# my_ds <- parsing_wrapper(ds2, "umtboth")
-# saveRDS(my_ds, file = "data/umtboth.rds")
+file_names <- list.files("D:/temp/Harry_White/")
+ds_names <- gsub(file_names, pattern = ".csv", replacement = "", fixed = TRUE)
+
+for(i in 1:10){
+  file_name <- file_names[i]
+  ds_name <- ds_names[i]
+  my_ds <- parsing_wrapper(read_delim(paste0("D:/temp/Harry_White/",file_name)), ds_name)
+  saveRDS(my_ds, file = paste0("data/", ds_name, ".rds"))
+}
 # 
-# ds1 <- readr::read_tsv("data-raw/ydall.txt")
-# my_ds1 <- parsing_wrapper(ds1, "ydall")
-# saveRDS(my_ds1, file = "data/ydall.rds")
+# my_ds <- parsing_wrapper(read_delim("D:/temp/Harry_White/T1curated.csv"), "T1")
+# saveRDS(my_ds, file = "data/T1.rds")
 # 
-# ds <- readr::read_csv("D:/temp/ybcboth.csv")
-# my_ds <- parsing_wrapper(ds, "ybcboth")
-# saveRDS(my_ds, file = "data/ybcboth.rds")
+# my_ds <- parsing_wrapper(read_delim("D:/temp/Harry_White/Dcurated.csv"), "D")
+# saveRDS(my_ds, file = "data/D.rds")
+# 
+# my_ds <- parsing_wrapper(read_delim("D:/temp/Harry_White/FOcurated.csv"), "FO")
+# saveRDS(my_ds, file = "data/FO.rds")
+# 
+# my_ds <- parsing_wrapper(read_delim("D:/temp/Harry_White/MZcurated.csv"), "MZ")
+# saveRDS(my_ds, file = "data/MZ.rds")
 
-ds <- readr::read_csv("data-raw/a2bcprod.csv")
-# remove the *01 etc from the VCALL name
-my_ds <- ds %>%
-  separate(V_CALL, sep = "\\*", into = c("V_CALL", NA)) 
-my_ds <- parsing_wrapper(my_ds, "a2bcprod")
-saveRDS(my_ds, file = "data/a2bcprod.rds")
+my_ds <- parsing_wrapper(read_delim("D:/temp/Harry_White/May23/MZ.csv"), "MZ")
+saveRDS(my_ds, file = "data/MZ.rds")
 
-ds <- readr::read_csv("data-raw/a2dprod.csv")
-# remove the *01 etc from the VCALL name
-my_ds <- ds %>%
-  separate(V_CALL, sep = "\\*", into = c("V_CALL", NA))
+my_ds <- parsing_wrapper(read_delim("D:/temp/Harry_White/May23/FO.csv"), "FO")
+saveRDS(my_ds, file = "data/FO.rds")
 
-my_ds <- parsing_wrapper(my_ds, "a2dprod")
-saveRDS(my_ds, file = "data/a2dprod.rds")
+my_ds <- parsing_wrapper(read_delim("D:/temp/Harry_White/May23/T1.csv"), "T1")
+saveRDS(my_ds, file = "data/T1.rds")
 
-  
-ds <- readr::read_csv("data-raw/Sam_sevAD.csv")
-# remove the *01 etc from the VCALL name
-my_ds <- ds %>%
-  separate(V_CALL, sep = "\\*", into = c("V_CALL", NA))
+my_ds <- parsing_wrapper(read_delim("D:/temp/Harry_White/May23/preB.csv"), "preB")
+saveRDS(my_ds, file = "data/preB.rds")
 
-my_ds <- parsing_wrapper(my_ds, "Sam_sevAD")
-saveRDS(my_ds, file = "data/Sam_sevAD.rds")
+my_ds <- parsing_wrapper(read_delim("D:/temp/Harry_White/May23/proB.csv"), "proB")
+saveRDS(my_ds, file = "data/proB.rds")
 
-ds <- readr::read_csv("data-raw/SamYD.csv")
-# remove the *01 etc from the VCALL name
-my_ds <- ds %>%
-  separate(V_CALL, sep = "\\*", into = c("V_CALL", NA))
-my_ds <- parsing_wrapper(my_ds, "SamYD")
-saveRDS(my_ds, file = "data/SamYD.rds")
+my_ds <- parsing_wrapper(read_delim("D:/temp/Harry_White/May23/proBnp.csv"), "proBnp")
+saveRDS(my_ds, file = "data/proBnp.rds")
+
+my_ds <- parsing_wrapper(read_delim("D:/temp/Harry_White/May23/proBoof.csv"), "proBoof")
+saveRDS(my_ds, file = "data/proBoof.rds")
+
+my_ds <- parsing_wrapper(read_delim("data-raw/proBstopif.csv"), "proBstopif")
+saveRDS(my_ds, file = "data/proBstopif.rds")
+
+
+
+
+
+
+
+
+
 
 
