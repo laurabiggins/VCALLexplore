@@ -246,8 +246,18 @@ server <- function(input, output, session) {
     else {
       ds1(readRDS(paste0("data/", input$dataset1_selector, ".rds")))
       ds2(readRDS(paste0("data/", input$dataset2_selector, ".rds")))
-      allVgenes(unique(c(ds1()$V_calls, ds2()$V_calls)))
-      allVgroups(unique(c(ds1()$V_groups, ds2()$V_groups)))
+      # we can only have the intersection here or we'll get errors
+      allVgenes(
+        unique(
+          ds1()$V_calls[ds1()$V_calls %in% ds2()$V_calls]
+        )
+      )
+      allVgroups(
+        unique(
+          ds1()$V_groups[ds1()$V_groups %in% ds2()$V_groups]
+        )
+      )
+      
       shinyWidgets::updateVirtualSelect(
         inputId="vcall_selector", 
         label = "Select V gene", 
