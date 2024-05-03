@@ -585,8 +585,8 @@ server <- function(input, output, session) {
   aa_both <- reactive({
     dplyr::full_join(aa1_counts(), aa2_counts(), by = c("pos", "value")) %>%
       dplyr::mutate(diff_withinV = percent_within_Vselection.x - percent_within_Vselection.y) %>%
-      dplyr::mutate(diff_dataset = percent_dataset.x - percent_dataset.y) %>%
-      select(pos, value, diff_withinV, diff_dataset)
+      dplyr::mutate(diff_dataset = percent_dataset.x - percent_dataset.y) #%>%
+      #select(pos, value, diff_withinV, diff_dataset)
   }) #|>
   #   bindCache(input$dataset1_selector, input$dataset2_selector) |>
   #   bindEvent(input$load_datasets)

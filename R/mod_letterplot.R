@@ -11,18 +11,25 @@ mod_letterplotUI <- function(id){#}, plot_height=400){
       textOutput(ns("plot_description")),
       br(),
       fluidRow(
-        # column(
-        #   width = 6#, 
-        #   #radioButtons(ns("yaxis1"), label=NULL, inline = TRUE, choices = c("percent difference" = "percent_diff", "fold change" = "fc"))
-        # ),
         column(
           width = 6, 
           radioButtons(ns("yaxis"), label=NULL, choices = c("within selected V" = "within_v", "whole dataset" = "whole_dataset"), inline = TRUE)
+        ),
+        column(
+          width = 2, offset = 4,
+          checkboxInput(ns("show_data"), label = "Show data")
         )
+      ),
+      conditionalPanel(
+        style = "background: white; color: #112A46; padding: 10px",
+        #condition = "input.show_data == 1",
+        condition = paste0("input['", ns("show_data"), "']"),
+        DT::dataTableOutput(ns("aa_data")),
+        downloadButton(ns("download_data"), "Download data")
       )
-    )#,
+    ),
     ##br(),
-    #actionButton(ns("browser"), "browser")
+    actionButton(ns("browser"), "browser")
   )
 }
 
@@ -30,6 +37,8 @@ mod_letterplotServer <- function(id, ds, raw_colours, ds1_name, ds2_name) {
   moduleServer(id, function(input, output, session) {
     
     ns_server <- NS(id)
+    
+    observeEvent(input$show_data, print("showing data"))
     
     observeEvent(input$browser, browser())
     
@@ -58,6 +67,8 @@ mod_letterplotServer <- function(id, ds, raw_colours, ds1_name, ds2_name) {
     
    # output$plot_description <- renderText(description())
     
+    output$aa_data <- DT::renderDataTable(ds())
+    
     output$letterplot <- renderPlotly({
       
       ds() |>
@@ -79,6 +90,14 @@ mod_letterplotServer <- function(id, ds, raw_colours, ds1_name, ds2_name) {
           xaxis = list(title="position")
         )
     })
+    
+    output$download_data <- downloadHandler(
+      
+      filename = function() ("AA_plot_data.csv"),
+      content = function(file){
+        readr::write_csv(file=file, ds())
+      }
+    )
     
   })
         
