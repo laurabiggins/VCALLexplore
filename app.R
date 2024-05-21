@@ -156,9 +156,9 @@ ui <- fluidPage(
                       sliderInput(
                         inputId = "cdr3_length",
                         label = NULL, 
-                        min = 9,
-                        max = 15, 
-                        value = 12
+                        min = 8,
+                        max = 18, 
+                        value = 13
                       )
                     )
                   )

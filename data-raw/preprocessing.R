@@ -12,6 +12,7 @@ for(i in 1:length(file_names)){
   my_ds <- parsing_wrapper(read_delim(paste0("D:/temp/Harry_White/",file_name)), ds_name)
   saveRDS(my_ds, file = paste0("data/", ds_name, ".rds"))
 }
+
 # 
 # my_ds <- parsing_wrapper(read_delim("D:/temp/Harry_White/T1curated.csv"), "T1")
 # saveRDS(my_ds, file = "data/T1.rds")

@@ -71,7 +71,7 @@ process_aa_lengths <- function(dataset, cdr3_col = "CDR3_IGBLAST_AA"){
 # now assuming that in the curated datasets the column name is fixed as "CDR3_IGBLAST_AA"
 process_individual_aa_left <- function(dataset) {
   dplyr::select(dataset, SEQUENCE_ID, Vgroup, V_CALL, DRF, CDR3_LENGTH, CDR3_IGBLAST_AA)  %>%
-    dplyr::filter(CDR3_LENGTH <= 22 & CDR3_LENGTH >=9) |>
+    #dplyr::filter(CDR3_LENGTH <= 22 & CDR3_LENGTH >=9) |>
     tidyr::separate(CDR3_IGBLAST_AA, sep = 1:21, into = as.character(1:22), fill = "right", remove = FALSE) |>
     tidyr::pivot_longer(-(SEQUENCE_ID:CDR3_IGBLAST_AA), names_to = "pos") |>
     dplyr::filter(value != "") |>
