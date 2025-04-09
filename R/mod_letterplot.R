@@ -27,9 +27,9 @@ mod_letterplotUI <- function(id){#}, plot_height=400){
         DT::dataTableOutput(ns("aa_data")),
         downloadButton(ns("download_data"), "Download data")
       )
-    ),
+    )#,
     ##br(),
-    actionButton(ns("browser"), "browser")
+    #actionButton(ns("browser"), "browser")
   )
 }
 
